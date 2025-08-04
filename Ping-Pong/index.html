@@ -3,266 +3,203 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ping Pong - ToolsNGames</title>
-  <meta name="description" content="Play Ping Pong online with CPU. Try ToolsNGames for free games and utility tools.">
+  <title>Memory Match</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
+      font-family: 'Segoe UI', sans-serif;
       margin: 0;
-      font-family: "Segoe UI", sans-serif;
-      background: #f4f4f4;
+      padding: 0;
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
+      color: #fff;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 2rem;
+      min-height: 100vh;
     }
 
     h1 {
-      color: #2962ff;
-      margin-bottom: 0.5rem;
+      font-size: 3rem;
+      margin-top: 30px;
+    }
+
+    .info {
+      margin: 10px 0;
+      font-size: 1.2rem;
     }
 
     .game-container {
-      background: #fff;
-      padding: 2rem;
-      border-radius: 20px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-      width: 90%;
-      max-width: 800px;
-      text-align: center;
+      background-color: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      margin: 20px;
+      color: #333;
     }
 
-    canvas {
-      background-color: #2c3e50;
-      margin: 1rem 0;
-      border-radius: 8px;
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 80px);
+      gap: 15px;
+      justify-content: center;
     }
 
-    select, button {
-      margin: 0.5rem;
-      padding: 0.5rem 1rem;
-      font-size: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-
-    button {
-      background-color: #2ecc71;
+    .card {
+      background-color: #673ab7;
+      border-radius: 10px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
       color: white;
-      border: none;
       cursor: pointer;
-      font-weight: bold;
+      transition: transform 0.3s;
     }
 
-    button:hover {
-      background-color: #27ae60;
+    .card.flipped {
+      background-color: #ffc107;
+      color: #000;
+      transform: rotateY(180deg);
     }
 
     .controls {
+      margin-top: 20px;
       display: flex;
-      justify-content: center;
-      gap: 2rem;
+      justify-content: space-between;
+      align-items: center;
       flex-wrap: wrap;
-      margin-top: 1rem;
     }
 
-    .score-label {
-      font-weight: bold;
-      margin-bottom: 0.5rem;
+    .dropdown {
+      margin: 10px;
     }
 
-    @media (max-width: 600px) {
-      .controls {
-        flex-direction: column;
-        align-items: center;
-      }
+    .restart-btn {
+      margin-top: 20px;
+      background-color: #00c853;
+      color: white;
+      padding: 12px 24px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .restart-btn:hover {
+      background-color: #009624;
     }
   </style>
 </head>
 <body>
-
+  <h1>Memory Match</h1>
+  <div class="info">Flip cards to find matching pairs. Try to clear the board in the fewest moves!</div>
   <div class="game-container">
-    <h1>Ping Pong</h1>
-    <p>Player (Right Paddle): ↑ & ↓ Arrow Keys<br/>First to 5 points wins!</p>
-
-    <div class="score-label">
-      <span id="cpuScore">CPU 0</span> | <span id="playerScore">Player 0</span>
-    </div>
-
-    <canvas id="pongCanvas" width="600" height="400"></canvas>
-
+    <div class="info">Moves: <span id="move-count">0</span> | Matches: <span id="match-count">0</span> / 8</div>
+    <div class="grid" id="grid"></div>
     <div class="controls">
-      <div>
-        <label>Game Mode:</label>
-        <select id="gameMode">
-          <option value="cpu">Player vs CPU</option>
-        </select>
-      </div>
-
-      <div>
-        <label>Ball Speed:</label>
-        <select id="ballSpeed">
-          <option value="slow">Slow</option>
-          <option value="medium" selected>Medium</option>
-          <option value="fast">Fast</option>
-        </select>
-      </div>
-
-      <div>
-        <label>Winning Score:</label>
-        <select id="winningScore">
-          <option value="3">3 Points</option>
-          <option value="5" selected>5 Points</option>
-          <option value="10">10 Points</option>
+      <div class="dropdown">
+        Difficulty:
+        <select id="difficulty">
+          <option value="4">Easy (4x4)</option>
+          <option value="6">Medium (6x6)</option>
+          <option value="8">Hard (8x8)</option>
         </select>
       </div>
     </div>
-
-    <button onclick="restartGame()">Restart Game</button>
+    <button class="restart-btn" onclick="startGame()">Restart Game</button>
   </div>
 
   <script>
-    const canvas = document.getElementById("pongCanvas");
-    const ctx = canvas.getContext("2d");
+    const grid = document.getElementById('grid');
+    const moveCountEl = document.getElementById('move-count');
+    const matchCountEl = document.getElementById('match-count');
+    const difficultySelect = document.getElementById('difficulty');
 
-    const paddleHeight = 80;
-    const paddleWidth = 10;
-    const ballRadius = 10;
+    let firstCard = null;
+    let secondCard = null;
+    let lockBoard = false;
+    let moves = 0;
+    let matches = 0;
+    let totalPairs = 8;
 
-    let playerY = canvas.height / 2 - paddleHeight / 2;
-    let cpuY = canvas.height / 2 - paddleHeight / 2;
-
-    let ballX = canvas.width / 2;
-    let ballY = canvas.height / 2;
-    let ballSpeedX = 4;
-    let ballSpeedY = 4;
-
-    let playerScore = 0;
-    let cpuScore = 0;
-
-    let upPressed = false;
-    let downPressed = false;
-    let gameRunning = true;
-
-    const gameMode = document.getElementById("gameMode");
-    const ballSpeed = document.getElementById("ballSpeed");
-    const winningScoreSelect = document.getElementById("winningScore");
-
-    function drawRect(x, y, w, h, color) {
-      ctx.fillStyle = color;
-      ctx.fillRect(x, y, w, h);
+    function generateCards(size) {
+      const count = (size * size) / 2;
+      const numbers = [...Array(count).keys()].flatMap(i => [i, i]);
+      numbers.sort(() => Math.random() - 0.5);
+      return numbers;
     }
 
-    function drawCircle(x, y, r, color) {
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      ctx.arc(x, y, r, 0, Math.PI * 2);
-      ctx.closePath();
-      ctx.fill();
+    function createCard(value) {
+      const card = document.createElement('div');
+      card.classList.add('card');
+      card.dataset.value = value;
+      card.textContent = '?';
+
+      card.addEventListener('click', () => {
+        if (lockBoard || card.classList.contains('flipped')) return;
+        card.textContent = value;
+        card.classList.add('flipped');
+
+        if (!firstCard) {
+          firstCard = card;
+        } else {
+          secondCard = card;
+          checkMatch();
+        }
+      });
+
+      return card;
     }
 
-    function drawNet() {
-      for (let i = 0; i < canvas.height; i += 20) {
-        drawRect(canvas.width / 2 - 1, i, 2, 10, "#fff");
+    function checkMatch() {
+      moves++;
+      moveCountEl.textContent = moves;
+
+      if (firstCard.dataset.value === secondCard.dataset.value) {
+        matches++;
+        matchCountEl.textContent = matches;
+        resetBoard();
+      } else {
+        lockBoard = true;
+        setTimeout(() => {
+          firstCard.textContent = '?';
+          secondCard.textContent = '?';
+          firstCard.classList.remove('flipped');
+          secondCard.classList.remove('flipped');
+          resetBoard();
+        }, 1000);
       }
     }
 
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawRect(0, 0, canvas.width, canvas.height, "#2c3e50");
-      drawNet();
-      drawRect(0, cpuY, paddleWidth, paddleHeight, "#fff");
-      drawRect(canvas.width - paddleWidth, playerY, paddleWidth, paddleHeight, "#fff");
-      drawCircle(ballX, ballY, ballRadius, "#fff");
-
-      document.getElementById("cpuScore").textContent = `CPU ${cpuScore}`;
-      document.getElementById("playerScore").textContent = `Player ${playerScore}`;
+    function resetBoard() {
+      [firstCard, secondCard] = [null, null];
+      lockBoard = false;
     }
 
-    function update() {
-      if (!gameRunning) return;
+    function startGame() {
+      const size = parseInt(difficultySelect.value);
+      const values = generateCards(size);
+      grid.innerHTML = '';
+      grid.style.gridTemplateColumns = `repeat(${size}, 80px)`;
+      moves = 0;
+      matches = 0;
+      moveCountEl.textContent = '0';
+      matchCountEl.textContent = '0';
+      totalPairs = values.length / 2;
 
-      if (upPressed && playerY > 0) playerY -= 6;
-      if (downPressed && playerY < canvas.height - paddleHeight) playerY += 6;
-
-      const difficulty = parseInt(ballSpeed.value);
-      const selectedSpeed = {
-        slow: 3,
-        medium: 5,
-        fast: 7
-      }[ballSpeed.value];
-      ballSpeedX = ballSpeedX > 0 ? selectedSpeed : -selectedSpeed;
-
-      ballX += ballSpeedX;
-      ballY += ballSpeedY;
-
-      if (ballY <= 0 || ballY >= canvas.height) {
-        ballSpeedY = -ballSpeedY;
-      }
-
-      if (
-        ballX + ballRadius >= canvas.width - paddleWidth &&
-        ballY >= playerY && ballY <= playerY + paddleHeight
-      ) {
-        ballSpeedX = -ballSpeedX;
-      }
-
-      if (
-        ballX - ballRadius <= paddleWidth &&
-        ballY >= cpuY && ballY <= cpuY + paddleHeight
-      ) {
-        ballSpeedX = -ballSpeedX;
-      }
-
-      // CPU AI movement
-      if (ballY > cpuY + paddleHeight / 2) cpuY += 3;
-      else if (ballY < cpuY + paddleHeight / 2) cpuY -= 3;
-
-      // Scoring
-      if (ballX <= 0) {
-        playerScore++;
-        resetBall();
-      } else if (ballX >= canvas.width) {
-        cpuScore++;
-        resetBall();
-      }
-
-      const winningScore = parseInt(winningScoreSelect.value);
-      if (playerScore >= winningScore || cpuScore >= winningScore) {
-        gameRunning = false;
-        alert(`${playerScore > cpuScore ? "Player" : "CPU"} wins!`);
-      }
+      values.forEach(value => {
+        const card = createCard(value);
+        grid.appendChild(card);
+      });
     }
 
-    function gameLoop() {
-      draw();
-      update();
-      requestAnimationFrame(gameLoop);
-    }
-
-    function resetBall() {
-      ballX = canvas.width / 2;
-      ballY = canvas.height / 2;
-      ballSpeedX = -ballSpeedX;
-    }
-
-    function restartGame() {
-      playerScore = 0;
-      cpuScore = 0;
-      gameRunning = true;
-      resetBall();
-    }
-
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowUp") upPressed = true;
-      if (e.key === "ArrowDown") downPressed = true;
-    });
-
-    document.addEventListener("keyup", (e) => {
-      if (e.key === "ArrowUp") upPressed = false;
-      if (e.key === "ArrowDown") downPressed = false;
-    });
-
-    gameLoop();
+    difficultySelect.addEventListener('change', startGame);
+    window.onload = startGame;
   </script>
 </body>
 </html>
