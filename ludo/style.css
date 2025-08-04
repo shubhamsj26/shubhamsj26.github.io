@@ -1,106 +1,82 @@
-body {
-  font-family: 'Segoe UI', sans-serif;
-  background: #f2f2f2;
-  text-align: center;
-  margin: 0;
-  padding: 20px;
+const board = document.getElementById("board");
+const dice = document.getElementById("dice");
+const rollBtn = document.getElementById("rollBtn");
+const diceValueDisplay = document.getElementById("diceValue");
+
+// 🎲 Dice roll logic
+rollBtn.addEventListener("click", () => {
+  dice.classList.add("animate");
+  const value = Math.floor(Math.random() * 6) + 1;
+
+  setTimeout(() => {
+    dice.textContent = getDiceFace(value);
+    diceValueDisplay.textContent = value;
+    dice.classList.remove("animate");
+  }, 600);
+});
+
+function getDiceFace(num) {
+  const faces = ["", "⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
+  return faces[num];
 }
 
-.game-container {
-  max-width: 700px;
-  margin: auto;
-  padding: 10px;
-}
+// 🧩 Create 15x15 grid
+for (let row = 0; row < 15; row++) {
+  for (let col = 0; col < 15; col++) {
+    const cell = document.createElement("div");
+    cell.classList.add("cell");
 
-h1 {
-  font-size: 2rem;
-  margin-bottom: 20px;
-}
+    // Mark homes
+    if (row < 6 && col < 6) cell.classList.add("red-home");
+    else if (row > 8 && col < 6) cell.classList.add("green-home");
+    else if (row < 6 && col > 8) cell.classList.add("yellow-home");
+    else if (row > 8 && col > 8) cell.classList.add("blue-home");
 
-.board {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
-  justify-items: center;
-  margin-bottom: 20px;
-}
+    // Center triangle
+    else if (row >= 6 && row <= 8 && col >= 6 && col <= 8) {
+      cell.classList.add("center");
+    }
 
-.cell {
-  width: 60px;
-  height: 60px;
-  background-color: #e0e0e0;
-  border-radius: 10px;
-  font-size: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 5px rgba(0,0,0,0.2);
-}
-
-.start.red {
-  background-color: #f28b82;
-}
-
-.finish.red {
-  background-color: #ffcccb;
-}
-
-.start.blue {
-  background-color: #aecbfa;
-}
-
-.finish.blue {
-  background-color: #d2e3fc;
-}
-
-.controls {
-  margin-top: 20px;
-}
-
-button {
-  font-size: 18px;
-  padding: 10px 25px;
-  cursor: pointer;
-  border: none;
-  border-radius: 8px;
-  background-color: #4caf50;
-  color: white;
-  margin-bottom: 10px;
-  transition: background 0.3s;
-}
-
-button:hover {
-  background-color: #45a049;
-}
-
-.dice {
-  font-size: 60px;
-  margin-bottom: 10px;
-  animation: roll 0.3s;
-}
-
-@keyframes roll {
-  0% { transform: rotate(0deg); }
-  25% { transform: rotate(90deg); }
-  50% { transform: rotate(180deg); }
-  75% { transform: rotate(270deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Responsive */
-@media (max-width: 500px) {
-  .cell {
-    width: 45px;
-    height: 45px;
-    font-size: 20px;
-  }
-
-  .dice {
-    font-size: 50px;
-  }
-
-  button {
-    font-size: 16px;
-    padding: 8px 20px;
+    cell.id = `cell-${row}-${col}`;
+    board.appendChild(cell);
   }
 }
+
+// 🟢 Add 4 tokens per player in their homes
+function addTokens() {
+  const tokenMap = {
+    red: [
+      [1, 1], [1, 3], [3, 1], [3, 3]
+    ],
+    green: [
+      [10, 1], [10, 3], [12, 1], [12, 3]
+    ],
+    yellow: [
+      [1, 11], [1, 13], [3, 11], [3, 13]
+    ],
+    blue: [
+      [10, 11], [10, 13], [12, 11], [12, 13]
+    ]
+  };
+
+  for (const [color, positions] of Object.entries(tokenMap)) {
+    positions.forEach(([row, col], i) => {
+      const token = document.createElement("div");
+      token.classList.add("token");
+      token.textContent = getTokenSymbol(color);
+      token.id = `${color}-token-${i}`;
+      document.getElementById(`cell-${row}-${col}`).appendChild(token);
+    });
+  }
+}
+
+function getTokenSymbol(color) {
+  return {
+    red: "🔴",
+    green: "🟢",
+    yellow: "🟡",
+    blue: "🔵"
+  }[color];
+}
+
+addTokens();
