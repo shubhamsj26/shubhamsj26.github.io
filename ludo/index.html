@@ -1,22 +1,579 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Ludo Game (15x15)</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ludo Game</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+        }
+
+        .board-container {
+            display: grid;
+            grid-template-columns: repeat(15, 1fr);
+            grid-template-rows: repeat(15, 1fr);
+            width: 80vmin; /* Responsive sizing */
+            height: 80vmin;
+            max-width: 600px;
+            max-height: 600px;
+            margin: auto;
+            border: 4px solid #333;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .square {
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .start-home-base {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 5px;
+            padding: 10px;
+            border: 2px solid #333;
+            border-radius: 10px;
+        }
+
+        .token-base {
+            background-color: rgba(255, 255, 255, 0.7);
+            border: 1px solid #333;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .token {
+            width: 80%;
+            height: 80%;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            cursor: pointer;
+            border: 2px solid #000;
+            transition: transform 0.2s ease-in-out;
+            position: absolute; /* Tokens are positioned absolutely within the square */
+        }
+
+        .token:hover, .token.movable {
+            transform: scale(1.1);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1.1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1.1); }
+        }
+
+        /* Player Colors */
+        .yellow { background-color: #fcdc3d; }
+        .green { background-color: #2ab866; }
+        .red { background-color: #e54646; }
+        .blue { background-color: #2d88d2; }
+
+        /* Board path colors */
+        .yellow-path { background-color: #ffef96; }
+        .green-path { background-color: #8fe5b4; }
+        .red-path { background-color: #f7a9a9; }
+        .blue-path { background-color: #8cb8e7; }
+        .white-path { background-color: #fff; }
+
+        /* Safe Squares */
+        .safe {
+            position: relative;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><g><path d="M 0 0 L 100 50 L 0 100 L 0 0" fill="rgba(0,0,0,0.15)"/><path d="M 100 0 L 0 50 L 100 100 L 100 0" fill="rgba(0,0,0,0.15)"/></g></svg>');
+        }
+        .yellow.safe { background-color: #fcdc3d; }
+        .green.safe { background-color: #2ab866; }
+        .red.safe { background-color: #e54646; }
+        .blue.safe { background-color: #2d88d2; }
+
+        .center-triangle {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .yellow-triangle { border-width: 0 0 7.5vmin 7.5vmin; border-color: transparent transparent #fcdc3d transparent; transform-origin: top left; transform: translate(-100%, -100%); }
+        .blue-triangle { border-width: 7.5vmin 0 0 7.5vmin; border-color: #2d88d2 transparent transparent transparent; transform-origin: bottom right; transform: translate(0, 0); }
+        .red-triangle { border-width: 0 7.5vmin 7.5vmin 0; border-color: transparent #e54646 transparent transparent; transform-origin: top right; transform: translate(0, -100%); }
+        .green-triangle { border-width: 7.5vmin 7.5vmin 0 0; border-color: #2ab866 transparent transparent transparent; transform-origin: bottom left; transform: translate(-100%, 0); }
+
+        .dice-container {
+            width: 60px;
+            height: 60px;
+            background-color: #fff;
+            border: 2px solid #333;
+            border-radius: 10px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            padding: 5px;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            background-color: #333;
+            border-radius: 50%;
+            place-self: center;
+        }
+
+        .dice-1 { grid-column: 2; grid-row: 2; }
+        .dice-2 { grid-column: 1; grid-row: 1; }
+        .dice-3 { grid-column: 3; grid-row: 3; }
+        .dice-4 { grid-column: 1; grid-row: 1; }
+        .dice-5 { grid-column: 3; grid-row: 3; }
+        .dice-6 { grid-column: 1; grid-row: 2; }
+    </style>
 </head>
-<body>
-  <h1>Ludo Game (15x15 Grid)</h1>
+<body class="bg-gray-100 flex flex-col items-center justify-center min-h-screen p-4">
+    <h1 class="text-4xl font-bold text-gray-800 mb-6">Ludo</h1>
+    <div class="flex flex-col items-center gap-6">
+        <div id="status-message" class="bg-white p-4 rounded-xl shadow-md text-center font-semibold text-gray-700">
+            Click "Roll Dice" to start the game!
+        </div>
+        <div class="board-container bg-white">
+            <!-- The board squares will be generated here by JavaScript -->
+        </div>
 
-  <div class="dice-container">
-    <div class="dice" id="dice">🎲</div>
-    <button id="rollBtn">Roll Dice</button>
-    <p>Dice Number: <span id="diceValue">-</span></p>
-  </div>
+        <div class="flex items-center gap-8 mt-6">
+            <button id="roll-dice-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95">
+                Roll Dice
+            </button>
+            <div id="dice-display" class="dice-container hidden">
+                <!-- Dice dots will be generated here by JavaScript -->
+            </div>
+        </div>
+    </div>
 
-  <div class="board" id="board"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const boardContainer = document.querySelector('.board-container');
+            const rollDiceBtn = document.getElementById('roll-dice-btn');
+            const diceDisplay = document.getElementById('dice-display');
+            const statusMessage = document.getElementById('status-message');
 
-  <script src="script.js"></script>
+            const boardSize = 15;
+            const playerColors = ['red', 'blue', 'green', 'yellow'];
+            let gameState = {
+                players: playerColors.map(color => ({
+                    color: color,
+                    tokens: [
+                        { id: `${color}-1`, position: -1, isHome: false, isWinner: false },
+                        { id: `${color}-2`, position: -1, isHome: false, isWinner: false },
+                        { id: `${color}-3`, position: -1, isHome: false, isWinner: false },
+                        { id: `${color}-4`, position: -1, isHome: false, isWinner: false }
+                    ],
+                    startSquare: 0,
+                    homePathStart: 0,
+                    tokensInHome: 0
+                })),
+                currentPlayerIndex: 0,
+                diceValue: 0,
+                movableTokens: [],
+                turnPhase: 'roll', // 'roll' or 'move'
+                playerOrder: ['red', 'blue', 'green', 'yellow'],
+                boardPath: [],
+                safeSquares: [1, 9, 14, 22, 27, 35, 40, 48],
+            };
+
+            const boardPaths = {
+                red: [100, 115, 130, 145, 160, 175, 174, 173, 172, 171, 170, 155, 140, 125, 110, 95, 94, 93, 92, 91, 76, 75, 74, 59, 58, 57, 56, 55, 40, 25, 26, 27, 28, 29, 30, 45, 60, 61, 62, 63, 64, 65, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 105],
+                blue: [104, 103, 102, 101, 100, 115, 130, 145, 160, 175, 174, 173, 172, 171, 170, 155, 140, 125, 110, 95, 94, 93, 92, 91, 76, 75, 74, 59, 58, 57, 56, 55, 40, 25, 26, 27, 28, 29, 30, 45, 60, 61, 62, 63, 64, 65, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 105],
+                green: [101, 102, 103, 104, 105, 90, 75, 74, 73, 72, 71, 70, 55, 40, 25, 26, 27, 28, 29, 30, 45, 60, 61, 62, 63, 64, 65, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 105],
+                yellow: [102, 103, 104, 105, 90, 75, 74, 73, 72, 71, 70, 55, 40, 25, 26, 27, 28, 29, 30, 45, 60, 61, 62, 63, 64, 65, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 105],
+            };
+            
+            // Define the special areas of the board using grid indices
+            const startPositions = {
+                red: 100,
+                blue: 104,
+                green: 105,
+                yellow: 101,
+            };
+            
+            const homePaths = {
+                red: [96, 97, 98, 99, 100, 101],
+                blue: [89, 88, 87, 86, 85, 84],
+                green: [80, 81, 82, 83, 84, 85],
+                yellow: [92, 93, 94, 95, 96, 97],
+            };
+
+            const diceDotPatterns = {
+                1: [5],
+                2: [1, 9],
+                3: [1, 5, 9],
+                4: [1, 3, 7, 9],
+                5: [1, 3, 5, 7, 9],
+                6: [1, 3, 4, 6, 7, 9],
+            };
+
+            // Setup the board in the DOM
+            function renderBoard() {
+                boardContainer.innerHTML = '';
+                const pathSquares = {};
+                
+                // Define the layout of the board's paths
+                for (let i = 0; i < boardSize * boardSize; i++) {
+                    const row = Math.floor(i / boardSize);
+                    const col = i % boardSize;
+                    const square = document.createElement('div');
+                    square.classList.add('square');
+                    square.dataset.index = i;
+
+                    if ((col < 6 || col > 8) && (row < 6 || row > 8)) {
+                        // Home bases
+                        square.classList.add('flex', 'justify-center', 'items-center', 'rounded-lg');
+                        square.style.backgroundColor = getHomeBaseColor(row, col);
+                        if (row < 6 && col < 6) { square.classList.add('yellow'); }
+                        else if (row < 6 && col > 8) { square.classList.add('green'); }
+                        else if (row > 8 && col < 6) { square.classList.add('red'); }
+                        else if (row > 8 && col > 8) { square.classList.add('blue'); }
+                        
+                        const homeBase = document.createElement('div');
+                        homeBase.classList.add('start-home-base');
+                        homeBase.style.backgroundColor = 'white';
+                        homeBase.innerHTML = `
+                            <div class="token-base" id="base-${getHomeBaseColor(row, col)}-1"></div>
+                            <div class="token-base" id="base-${getHomeBaseColor(row, col)}-2"></div>
+                            <div class="token-base" id="base-${getHomeBaseColor(row, col)}-3"></div>
+                            <div class="token-base" id="base-${getHomeBaseColor(row, col)}-4"></div>
+                        `;
+                        square.appendChild(homeBase);
+
+                    } else if (row === 7 && col === 7) {
+                        // Center triangle
+                        const yellowTriangle = document.createElement('div');
+                        yellowTriangle.classList.add('center-triangle', 'yellow-triangle');
+                        square.appendChild(yellowTriangle);
+                        const redTriangle = document.createElement('div');
+                        redTriangle.classList.add('center-triangle', 'red-triangle');
+                        square.appendChild(redTriangle);
+                        const greenTriangle = document.createElement('div');
+                        greenTriangle.classList.add('center-triangle', 'green-triangle');
+                        square.appendChild(greenTriangle);
+                        const blueTriangle = document.createElement('div');
+                        blueTriangle.classList.add('center-triangle', 'blue-triangle');
+                        square.appendChild(blueTriangle);
+                        
+                    } else if (isPathSquare(row, col)) {
+                        // Path squares
+                        square.classList.add('white-path');
+                        // Add color to special squares
+                        if (col === 6 && row === 1) square.classList.add('green');
+                        if (col === 8 && row === 1) square.classList.add('green');
+                        if (col === 13 && row === 6) square.classList.add('blue');
+                        if (col === 13 && row === 8) square.classList.add('blue');
+                        if (col === 8 && row === 13) square.classList.add('red');
+                        if (col === 6 && row === 13) square.classList.add('red');
+                        if (col === 1 && row === 8) square.classList.add('yellow');
+                        if (col === 1 && row === 6) square.classList.add('yellow');
+                    }
+                    
+                    boardContainer.appendChild(square);
+                }
+            }
+
+            // A helper function to determine the color of a home base
+            function getHomeBaseColor(row, col) {
+                if (row < 6 && col < 6) return 'yellow';
+                if (row < 6 && col > 8) return 'green';
+                if (row > 8 && col < 6) return 'red';
+                if (row > 8 && col > 8) return 'blue';
+                return '';
+            }
+
+            // A helper function to determine if a square is part of the main path
+            function isPathSquare(row, col) {
+                return (row === 6 || row === 8 || col === 6 || col === 8) || // Main paths
+                       ((row === 7 && col >= 1 && col <= 5) || (row === 7 && col >= 9 && col <= 13)) || // Home paths horizontal
+                       ((col === 7 && row >= 1 && row <= 5) || (col === 7 && row >= 9 && row <= 13)); // Home paths vertical
+            }
+            
+            function renderTokens() {
+                // Clear existing tokens
+                document.querySelectorAll('.token').forEach(token => token.remove());
+
+                gameState.players.forEach(player => {
+                    player.tokens.forEach(token => {
+                        const tokenElement = document.createElement('div');
+                        tokenElement.classList.add('token', player.color, 'shadow-md');
+                        tokenElement.dataset.playerId = player.color;
+                        tokenElement.dataset.tokenId = token.id;
+                        tokenElement.textContent = token.id.split('-')[1];
+
+                        tokenElement.addEventListener('click', () => handleTokenClick(tokenElement));
+
+                        if (token.position === -1) {
+                            // Token is in the home base
+                            const baseElement = document.getElementById(`base-${player.color}-${token.id.split('-')[1]}`);
+                            if (baseElement) {
+                                baseElement.appendChild(tokenElement);
+                            }
+                        } else {
+                            // Token is on the path
+                            const squareIndex = gameState.boardPath[token.position];
+                            const squareElement = boardContainer.querySelector(`[data-index="${squareIndex}"]`);
+                            if (squareElement) {
+                                squareElement.appendChild(tokenElement);
+                            }
+                        }
+                        // Add click listeners to tokens
+                        tokenElement.addEventListener('click', () => handleTokenClick(tokenElement, player.color, token));
+                    });
+                });
+            }
+
+            function setupBoardPaths() {
+                // This is a simplified way to create the board path by defining the sequence of grid indices
+                // Start from Red's start square, go around, and then into the home paths
+                let path = [100, 115, 130, 145, 160, 175, 174, 173, 172, 171, 170, 155, 140, 125, 110, 95, 94, 93, 92, 91, 76, 75, 74, 59, 58, 57, 56, 55, 40, 25, 26, 27, 28, 29, 30, 45, 60, 61, 62, 63, 64, 65, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 105];
+
+                // Red's home path
+                gameState.players[0].homePathStart = path.length;
+                path = path.concat([100, 101, 102, 103, 104]);
+
+                // Blue's home path
+                gameState.players[1].homePathStart = path.length;
+                path = path.concat([89, 88, 87, 86, 85, 84]);
+
+                // Green's home path
+                gameState.players[2].homePathStart = path.length;
+                path = path.concat([80, 81, 82, 83, 84, 85]);
+
+                // Yellow's home path
+                gameState.players[3].homePathStart = path.length;
+                path = path.concat([92, 93, 94, 95, 96, 97]);
+
+                gameState.boardPath = path;
+            }
+
+            function updateUI() {
+                renderTokens();
+                // Highlight current player's tokens
+                const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+                document.querySelectorAll(`.token`).forEach(token => {
+                    token.classList.remove('movable', 'border-4', 'border-white');
+                });
+                
+                // Show which tokens can be moved
+                if (gameState.turnPhase === 'move') {
+                    gameState.movableTokens.forEach(token => {
+                        const tokenElement = document.getElementById(token.id);
+                        if (tokenElement) {
+                            tokenElement.classList.add('movable', 'border-4', 'border-white');
+                        }
+                    });
+                }
+                
+                statusMessage.textContent = `It's ${currentPlayer.color.toUpperCase()}'s turn.`;
+
+                // Update dice display
+                diceDisplay.innerHTML = '';
+                if (gameState.diceValue > 0) {
+                    diceDisplay.classList.remove('hidden');
+                    const dots = diceDotPatterns[gameState.diceValue];
+                    for (let i = 1; i <= 9; i++) {
+                        const dotWrapper = document.createElement('div');
+                        dotWrapper.classList.add('dot-wrapper', 'w-full', 'h-full', 'flex', 'items-center', 'justify-center');
+                        if (dots.includes(i)) {
+                            const dot = document.createElement('div');
+                            dot.classList.add('dot');
+                            dotWrapper.appendChild(dot);
+                        }
+                        diceDisplay.appendChild(dotWrapper);
+                    }
+                }
+                
+                // Disable/Enable the roll button
+                rollDiceBtn.disabled = gameState.turnPhase === 'move';
+                rollDiceBtn.classList.toggle('bg-gray-400', rollDiceBtn.disabled);
+                rollDiceBtn.classList.toggle('hover:bg-indigo-700', !rollDiceBtn.disabled);
+                rollDiceBtn.classList.toggle('cursor-not-allowed', rollDiceBtn.disabled);
+            }
+
+            function rollDice() {
+                if (gameState.turnPhase !== 'roll') return;
+
+                const diceRoll = Math.floor(Math.random() * 6) + 1;
+                gameState.diceValue = diceRoll;
+                gameState.turnPhase = 'move';
+                statusMessage.textContent = `${gameState.players[gameState.currentPlayerIndex].color.toUpperCase()} rolled a ${diceRoll}.`;
+
+                checkValidMoves();
+                updateUI();
+            }
+
+            function checkValidMoves() {
+                const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+                gameState.movableTokens = [];
+
+                if (gameState.diceValue === 6) {
+                    // All tokens are movable if dice is 6
+                    gameState.movableTokens = currentPlayer.tokens.filter(token => !token.isWinner);
+                } else {
+                    // Only tokens already on the board can move
+                    gameState.movableTokens = currentPlayer.tokens.filter(token => token.position !== -1 && !token.isWinner);
+                }
+
+                if (gameState.movableTokens.length === 0 && gameState.diceValue !== 6) {
+                    // If no moves are possible, switch player
+                    statusMessage.textContent += " No moves possible. Switching turn.";
+                    setTimeout(switchPlayer, 1500);
+                }
+            }
+            
+            function handleTokenClick(tokenElement, color, token) {
+                if (gameState.turnPhase !== 'move' || token.isWinner) return;
+
+                const clickedTokenPlayer = gameState.players.find(p => p.color === color);
+                const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+
+                if (clickedTokenPlayer.color !== currentPlayer.color) {
+                    statusMessage.textContent = "That's not your token!";
+                    return;
+                }
+                
+                const isMovable = gameState.movableTokens.some(t => t.id === token.id);
+
+                if (isMovable) {
+                    if (token.position === -1 && gameState.diceValue === 6) {
+                        // Move token out of home base
+                        token.position = currentPlayer.startSquare;
+                        gameState.turnPhase = 'roll';
+                        statusMessage.textContent = `${currentPlayer.color.toUpperCase()} moved a token out of home base! Roll again.`;
+                        // A dice roll of 6 gets another turn
+                        if (gameState.diceValue !== 6) {
+                            setTimeout(switchPlayer, 1500);
+                        } else {
+                            setTimeout(() => {
+                                statusMessage.textContent = `${currentPlayer.color.toUpperCase()} gets to roll again.`;
+                                updateUI();
+                            }, 1500);
+                        }
+                    } else if (token.position !== -1) {
+                        // Move a token already on the board
+                        const oldPositionIndex = token.position;
+                        const newPositionIndex = oldPositionIndex + gameState.diceValue;
+
+                        if (newPositionIndex >= gameState.boardPath.length) {
+                             // This move is into the home path or past it, let's handle it
+                            const homePath = homePaths[currentPlayer.color];
+                            const currentMainPathIndex = gameState.boardPath.indexOf(oldPositionIndex);
+                            const pathLength = gameState.boardPath.length;
+
+                            if (newPositionIndex >= pathLength) {
+                                // Moving into the final path
+                                const stepsToHome = pathLength - currentMainPathIndex - 1;
+                                const stepsInHomePath = gameState.diceValue - stepsToHome;
+                                const newHomePathIndex = homePath[stepsInHomePath - 1];
+
+                                if(stepsInHomePath > homePath.length) {
+                                  // Overshot the final square, can't move
+                                  statusMessage.textContent = "Cannot move, you overshot the final square!";
+                                  return;
+                                }
+
+                                token.position = newHomePathIndex;
+
+                                if (stepsInHomePath === homePath.length) {
+                                    // Player wins!
+                                    token.isWinner = true;
+                                    currentPlayer.tokensInHome++;
+                                    statusMessage.textContent = `${currentPlayer.color.toUpperCase()}'s token reached the end!`;
+                                    checkWinCondition(currentPlayer);
+                                }
+                            }
+
+                        } else {
+                            const newPosition = gameState.boardPath[newPositionIndex];
+                            // Check if a token needs to be killed
+                            const tokenToKill = findTokenAtPosition(newPosition);
+                            if (tokenToKill && tokenToKill.player.color !== currentPlayer.color) {
+                                // Check if the square is a safe square
+                                const isSafe = gameState.safeSquares.includes(newPosition);
+                                if (!isSafe) {
+                                    // Kill the token
+                                    tokenToKill.token.position = -1;
+                                    statusMessage.textContent = `${currentPlayer.color.toUpperCase()} killed a ${tokenToKill.player.color.toUpperCase()} token!`;
+                                }
+                            }
+                            token.position = newPositionIndex;
+                        }
+
+                        gameState.turnPhase = 'roll';
+                        // A dice roll of 6 gets another turn
+                        if (gameState.diceValue !== 6) {
+                            setTimeout(switchPlayer, 1500);
+                        } else {
+                            setTimeout(() => {
+                                statusMessage.textContent = `${currentPlayer.color.toUpperCase()} gets to roll again.`;
+                                updateUI();
+                            }, 1500);
+                        }
+
+                    }
+                    updateUI();
+                } else {
+                    statusMessage.textContent = "You can't move that token!";
+                }
+            }
+
+            function findTokenAtPosition(position) {
+                for (const player of gameState.players) {
+                    for (const token of player.tokens) {
+                        if (token.position !== -1 && gameState.boardPath[token.position] === position) {
+                            return { player, token };
+                        }
+                    }
+                }
+                return null;
+            }
+
+            function switchPlayer() {
+                gameState.currentPlayerIndex = (gameState.currentPlayerIndex + 1) % gameState.players.length;
+                gameState.diceValue = 0;
+                gameState.turnPhase = 'roll';
+                updateUI();
+            }
+
+            function checkWinCondition(player) {
+                if (player.tokensInHome === 4) {
+                    statusMessage.textContent = `Game Over! ${player.color.toUpperCase()} wins!`;
+                    rollDiceBtn.disabled = true;
+                }
+            }
+
+            rollDiceBtn.addEventListener('click', rollDice);
+
+            // Initial setup
+            setupBoardPaths();
+            renderBoard();
+            renderTokens();
+            updateUI();
+        });
+    </script>
 </body>
 </html>
