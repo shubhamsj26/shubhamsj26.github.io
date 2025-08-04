@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Tools</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <!-- Main Container -->
+    <div class="bg-white rounded-xl shadow-2xl p-6 sm:p-8 w-full max-w-2xl">
+        <h1 class="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-6">Web Tools</h1>
+
+        <!-- Tools Container -->
+        <div id="tools-container" class="space-y-6">
+
+            <!-- Character and Word Counter Tool -->
+            <div class="bg-gray-50 rounded-lg p-4 sm:p-6 shadow-md">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-4">Character & Word Counter</h2>
+                <p class="text-gray-500 mb-4">Type or paste your text below to get an instant count of characters and words.</p>
+                <textarea 
+                    id="text-input" 
+                    class="w-full h-40 p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow" 
+                    placeholder="Start typing or paste your text here..."
+                ></textarea>
+                
+                <div class="flex flex-col sm:flex-row justify-between items-center mt-4 space-y-2 sm:space-y-0">
+                    <div class="flex items-center space-x-4">
+                        <p class="text-lg text-gray-700">
+                            Characters: <span id="character-count" class="font-bold text-blue-600">0</span>
+                        </p>
+                        <p class="text-lg text-gray-700">
+                            Words: <span id="word-count" class="font-bold text-blue-600">0</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const textInput = document.getElementById('text-input');
+            const characterCountSpan = document.getElementById('character-count');
+            const wordCountSpan = document.getElementById('word-count');
+
+            /**
+             * Updates the character and word counts based on the textarea content.
+             */
+            function updateCounts() {
+                const text = textInput.value;
+                
+                // Get character count (including spaces and newlines)
+                const characters = text.length;
+                
+                // Get word count
+                // Split the text by whitespace and filter out empty strings
+                const words = text.trim().split(/\s+/).filter(word => word.length > 0).length;
+
+                // Update the DOM elements
+                characterCountSpan.textContent = characters;
+                wordCountSpan.textContent = words;
+            }
+
+            // Listen for input events on the textarea to update counts in real-time
+            textInput.addEventListener('input', updateCounts);
+
+            // Initial call to set counts to 0 on page load
+            updateCounts();
+        });
+    </script>
+</body>
+</html>
