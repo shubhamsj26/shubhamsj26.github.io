@@ -1,95 +1,106 @@
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background: #f5f5f5;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f2f2f2;
+  text-align: center;
+  margin: 0;
+  padding: 20px;
+}
+
+.game-container {
+  max-width: 700px;
+  margin: auto;
+  padding: 10px;
 }
 
 h1 {
-    text-align: center;
-    padding: 20px;
-    margin: 0;
-    background-color: #eee;
-    font-size: 24px;
+  font-size: 2rem;
+  margin-bottom: 20px;
 }
 
-.container {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: flex-start;
-    gap: 20px;
-    padding: 20px;
-    flex-wrap: wrap;
-}
-
-#game-board {
-    display: grid;
-    grid-template-columns: repeat(15, minmax(20px, 1fr));
-    gap: 1px;
-    border: 2px solid #333;
-    background-color: #ccc;
-    flex: 1 1 300px;
-    max-width: 600px;
+.board {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  justify-items: center;
+  margin-bottom: 20px;
 }
 
 .cell {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    background-color: #fff;
-    text-align: center;
-    vertical-align: middle;
-    font-weight: bold;
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-sizing: border-box;
+  width: 60px;
+  height: 60px;
+  background-color: #e0e0e0;
+  border-radius: 10px;
+  font-size: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 5px rgba(0,0,0,0.2);
 }
 
-#sidebar {
-    flex: 1 1 200px;
-    min-width: 200px;
-    padding: 15px;
-    background-color: #f0f0f0;
-    border: 2px solid #333;
+.start.red {
+  background-color: #f28b82;
+}
+
+.finish.red {
+  background-color: #ffcccb;
+}
+
+.start.blue {
+  background-color: #aecbfa;
+}
+
+.finish.blue {
+  background-color: #d2e3fc;
+}
+
+.controls {
+  margin-top: 20px;
 }
 
 button {
-    padding: 10px 15px;
-    margin-top: 10px;
-    font-size: 14px;
-    cursor: pointer;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 4px;
+  font-size: 18px;
+  padding: 10px 25px;
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  background-color: #4caf50;
+  color: white;
+  margin-bottom: 10px;
+  transition: background 0.3s;
 }
 
 button:hover {
-    background-color: #218838;
+  background-color: #45a049;
 }
 
-/* Player colors */
-.cell.player1 {
-    background-color: red;
-    color: white;
+.dice {
+  font-size: 60px;
+  margin-bottom: 10px;
+  animation: roll 0.3s;
 }
 
-.cell.player2 {
-    background-color: green;
-    color: white;
+@keyframes roll {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(90deg); }
+  50% { transform: rotate(180deg); }
+  75% { transform: rotate(270deg); }
+  100% { transform: rotate(360deg); }
 }
 
-/* Responsive layout */
-@media (max-width: 768px) {
-    .container {
-        flex-direction: column;
-        align-items: center;
-    }
+/* Responsive */
+@media (max-width: 500px) {
+  .cell {
+    width: 45px;
+    height: 45px;
+    font-size: 20px;
+  }
 
-    #game-board {
-        grid-template-columns: repeat(10, minmax(20px, 1fr));
-        max-width: 90vw;
-    }
+  .dice {
+    font-size: 50px;
+  }
+
+  button {
+    font-size: 16px;
+    padding: 8px 20px;
+  }
 }
