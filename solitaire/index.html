@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solitaire</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .card-face {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            cursor: grab;
+            user-select: none;
+            width: 100%;
+            height: 100%;
+        }
+
+        .card-back {
+            background: #2E8B57; /* A shade of green */
+            background-image: repeating-linear-gradient(
+                -45deg,
+                #2E8B57,
+                #2E8B57 5px,
+                #228B22 5px,
+                #228B22 10px
+            );
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        .empty-pile {
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.5);
+            width: 100%;
+            height: 100%;
+        }
+
+        .red-suit { color: #d21f3c; }
+        .black-suit { color: #1e1e1e; }
+        
+        .rank {
+            font-size: 1.25rem;
+            line-height: 1.75rem;
+            font-weight: 600;
+        }
+        
+        .suit-icon {
+            font-size: 1.1rem;
+        }
+
+        .card-top-left, .card-bottom-right {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-top-left {
+            top: 5px;
+            left: 8px;
+        }
+
+        .card-bottom-right {
+            bottom: 5px;
+            right: 8px;
+            transform: rotate(180deg);
+        }
+
+        .dragging {
+            opacity: 0.7;
+            transform: scale(1.05);
+            z-index: 100;
+        }
+
+        .message-box {
+            position: fixed; /* Changed to fixed to stay in view */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 2rem 3rem;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            z-index: 200;
+            display: none;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .solitaire-board {
+                /* Changed to flex-row and flex-wrap to keep a horizontal flow on small screens */
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .top-piles, .tableau {
+                width: 100%;
+            }
+
+            .card {
+                width: 60px;
+                height: 90px;
+            }
+
+            .rank { font-size: 1rem; }
+            .suit-icon { font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body class="bg-emerald-700 min-h-screen flex flex-col items-center justify-center p-4">
+
+    <!-- Game Container -->
+    <div id="solitaire-game-container" class="w-full max-w-7xl mx-auto flex flex-col items-center p-8 bg-emerald-800 rounded-xl shadow-2xl">
+        
+        <!-- Header -->
+        <header class="mb-8 text-center">
+            <h1 class="text-6xl font-bold text-white mb-2">Solitaire</h1>
+            <a href="#" id="how-to-play" class="text-emerald-300 hover:underline">How to play?</a>
+        </header>
+
+        <!-- Message Box for Alerts -->
+        <div id="message-box" class="message-box">
+            <p id="message-content" class="text-xl font-semibold text-gray-800 mb-4"></p>
+            <button id="close-message" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">OK</button>
+        </div>
+
+        <!-- Game Board -->
+        <!-- Updated to always be a horizontal flex container that wraps -->
+        <div class="solitaire-board w-full flex flex-row flex-wrap gap-4 mb-8">
+            
+            <!-- Top Piles (Draw, Waste, Foundation) -->
+            <div class="top-piles flex-grow flex justify-between gap-4 mb-4">
+                <!-- Stock Pile (Draw Pile) -->
+                <div id="stock-pile" class="card empty-pile w-20 h-28 relative rounded-lg" data-pile-type="stock"></div>
+                <!-- Waste Pile -->
+                <div id="waste-pile" class="card empty-pile w-20 h-28 relative rounded-lg" data-pile-type="waste"></div>
+                <!-- Foundation Piles -->
+                <div class="foundation-piles flex justify-end gap-4">
+                    <div id="foundation-0" class="foundation-pile card empty-pile w-20 h-28 relative rounded-lg" data-pile-type="foundation" data-pile-index="0">F</div>
+                    <div id="foundation-1" class="foundation-pile card empty-pile w-20 h-28 relative rounded-lg" data-pile-type="foundation" data-pile-index="1">F</div>
+                    <div id="foundation-2" class="foundation-pile card empty-pile w-20 h-28 relative rounded-lg" data-pile-type="foundation" data-pile-index="2">F</div>
+                    <div id="foundation-3" class="foundation-pile card empty-pile w-20 h-28 relative rounded-lg" data-pile-type="foundation" data-pile-index="3">F</div>
+                </div>
+            </div>
+
+            <!-- Tableau Piles -->
+            <div id="tableau" class="tableau w-full flex flex-wrap justify-center gap-4">
+                <!-- Tableau piles will be rendered here dynamically by JavaScript -->
+            </div>
+        </div>
+
+        <!-- New Game Button -->
+        <button id="new-game-button" class="mt-8 px-8 py-3 bg-emerald-600 text-white font-bold rounded-full shadow-lg hover:bg-emerald-700 transition-colors">
+            New Game
+        </button>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- Game State Variables ---
+            const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
+            const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+            const rankValues = { 'A': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'J': 11, 'Q': 12, 'K': 13 };
+            const suitSymbols = { 'hearts': '♥', 'diamonds': '♦', 'clubs': '♣', 'spades': '♠' };
+            const suitColors = { 'hearts': 'red-suit', 'diamonds': 'red-suit', 'clubs': 'black-suit', 'spades': 'black-suit' };
+
+            let stockPile = [];
+            let wastePile = [];
+            let foundationPiles = [[], [], [], []];
+            let tableauPiles = [[], [], [], [], [], [], []];
+            
+            // Variables for drag and drop
+            let draggedCards = [];
+            let draggedFrom = null;
+
+            // --- DOM Elements ---
+            const stockPileEl = document.getElementById('stock-pile');
+            const wastePileEl = document.getElementById('waste-pile');
+            const foundationPilesEl = document.querySelector('.foundation-piles');
+            const tableauEl = document.getElementById('tableau');
+            const newGameButton = document.getElementById('new-game-button');
+            const messageBox = document.getElementById('message-box');
+            const messageContentEl = document.getElementById('message-content');
+            const closeMessageButton = document.getElementById('close-message');
+            const howToPlayLink = document.getElementById('how-to-play');
+
+            // --- Utility Functions ---
+
+            /**
+             * Shuffles an array using the Fisher-Yates algorithm.
+             * @param {Array} array The array to shuffle.
+             * @returns {Array} The shuffled array.
+             */
+            function shuffle(array) {
+                let currentIndex = array.length, randomIndex;
+                while (currentIndex !== 0) {
+                    randomIndex = Math.floor(Math.random() * currentIndex);
+                    currentIndex--;
+                    [array[currentIndex], array[randomIndex]] = [
+                        array[randomIndex], array[currentIndex]];
+                }
+                return array;
+            }
+            
+            /**
+             * Displays a message box with a given message.
+             * @param {string} message The message to display.
+             */
+            function showMessage(message) {
+                messageContentEl.textContent = message;
+                messageBox.style.display = 'block';
+            }
+
+            /**
+             * Hides the message box.
+             */
+            function hideMessage() {
+                messageBox.style.display = 'none';
+            }
+            
+            // --- Game Logic Functions ---
+
+            /**
+             * Creates and shuffles a new deck of 52 cards.
+             * @returns {Array} The shuffled deck.
+             */
+            function createDeck() {
+                let deck = [];
+                for (const suit of suits) {
+                    for (const rank of ranks) {
+                        deck.push({ suit, rank, isFaceUp: false });
+                    }
+                }
+                return shuffle(deck);
+            }
+
+            /**
+             * Initializes a new game by setting up the board.
+             */
+            function initGame() {
+                // Reset all piles
+                stockPile = createDeck();
+                wastePile = [];
+                foundationPiles = [[], [], [], []];
+                tableauPiles = [[], [], [], [], [], [], []];
+                draggedCards = [];
+                draggedFrom = null;
+
+                // Deal cards to the tableau piles
+                for (let i = 0; i < 7; i++) {
+                    for (let j = 0; j <= i; j++) {
+                        const card = stockPile.pop();
+                        // Only the last card in each tableau pile is face up
+                        card.isFaceUp = (j === i);
+                        tableauPiles[i].push(card);
+                    }
+                }
+                renderGame();
+            }
+
+            /**
+             * Renders a single card element.
+             * @param {Object} card The card object to render.
+             * @param {string} pileType The type of pile ('tableau', 'foundation', 'waste', 'stock').
+             * @param {number} pileIndex The index of the pile this card belongs to.
+             * @param {number} cardIndex The index of the card within its pile.
+             * @returns {HTMLElement} The card element.
+             */
+            function renderCard(card, pileType, pileIndex, cardIndex) {
+                const cardEl = document.createElement('div');
+                cardEl.classList.add('card', 'w-20', 'h-28', 'rounded-lg', 'absolute');
+                cardEl.draggable = false; // By default, cards are not draggable
+
+                // Add data attributes for game logic
+                cardEl.dataset.pileType = pileType;
+                cardEl.dataset.pileIndex = pileIndex;
+                cardEl.dataset.cardIndex = cardIndex;
+
+                if (card.isFaceUp) {
+                    cardEl.classList.add('card-face', suitColors[card.suit]);
+                    cardEl.innerHTML = `
+                        <div class="card-top-left">
+                            <span class="rank">${card.rank}</span>
+                            <span class="suit-icon">${suitSymbols[card.suit]}</span>
+                        </div>
+                        <div class="card-bottom-right">
+                            <span class="rank">${card.rank}</span>
+                            <span class="suit-icon">${suitSymbols[card.suit]}</span>
+                        </div>
+                    `;
+                    // Only face-up cards are potentially draggable
+                    cardEl.draggable = true;
+                } else {
+                    cardEl.classList.add('card-back');
+                }
+                
+                // Add event listeners for drag and drop
+                if (cardEl.draggable) {
+                    cardEl.addEventListener('dragstart', handleDragStart);
+                }
+
+                // Position cards for overlapping effect in tableau
+                if (pileType === 'tableau') {
+                    cardEl.style.top = `${cardIndex * 25}px`;
+                }
+
+                return cardEl;
+            }
+            
+            /**
+             * Clears the game board and re-renders all piles and cards.
+             * This function is now more focused on updating the state of the piles rather than clearing the entire board.
+             */
+            function renderGame() {
+                // Render stock pile
+                stockPileEl.innerHTML = '';
+                if (stockPile.length > 0) {
+                    stockPileEl.classList.remove('empty-pile');
+                    const cardEl = document.createElement('div');
+                    cardEl.classList.add('card', 'card-back', 'w-20', 'h-28', 'relative', 'rounded-lg', 'cursor-pointer');
+                    stockPileEl.appendChild(cardEl);
+                } else {
+                    stockPileEl.classList.add('empty-pile');
+                    stockPileEl.innerHTML = '';
+                }
+                stockPileEl.onclick = handleStockClick;
+
+                // Render waste pile
+                wastePileEl.innerHTML = '';
+                if (wastePile.length > 0) {
+                    wastePileEl.classList.remove('empty-pile');
+                    const lastCard = wastePile[wastePile.length - 1];
+                    const cardEl = renderCard(lastCard, 'waste', -1, wastePile.length - 1);
+                    wastePileEl.appendChild(cardEl);
+                    wastePileEl.ondragover = allowDrop;
+                    wastePileEl.ondrop = handleDrop;
+                } else {
+                    wastePileEl.classList.add('empty-pile');
+                    wastePileEl.innerHTML = '';
+                    wastePileEl.ondragover = null;
+                    wastePileEl.ondrop = null;
+                }
+                
+
+                // Render foundation piles
+                foundationPiles.forEach((pile, i) => {
+                    const pileEl = document.getElementById(`foundation-${i}`);
+                    pileEl.innerHTML = '';
+                    if (pile.length > 0) {
+                        pileEl.classList.remove('empty-pile');
+                        const card = pile[pile.length - 1];
+                        const cardEl = renderCard(card, 'foundation', i, pile.length - 1);
+                        pileEl.appendChild(cardEl);
+                    } else {
+                        pileEl.classList.add('empty-pile');
+                        pileEl.innerHTML = 'F';
+                    }
+                    pileEl.ondragover = allowDrop;
+                    pileEl.ondrop = handleDrop;
+                });
+
+                // Render tableau piles
+                tableauPiles.forEach((pile, i) => {
+                    let pileEl = document.getElementById(`tableau-${i}`);
+                    // Create pile element if it doesn't exist
+                    if (!pileEl) {
+                        pileEl = document.createElement('div');
+                        pileEl.id = `tableau-${i}`;
+                        pileEl.classList.add('tableau-pile', 'relative', 'w-20', 'h-72');
+                        pileEl.dataset.pileType = 'tableau';
+                        pileEl.dataset.pileIndex = i;
+                        tableauEl.appendChild(pileEl);
+                    }
+                    
+                    pileEl.innerHTML = '';
+                    if (pile.length > 0) {
+                        pileEl.classList.remove('empty-pile');
+                        pile.forEach((card, j) => {
+                            pileEl.appendChild(renderCard(card, 'tableau', i, j));
+                        });
+                    } else {
+                        pileEl.classList.add('empty-pile');
+                        pileEl.innerHTML = '';
+                    }
+
+                    pileEl.ondragover = allowDrop;
+                    pileEl.ondrop = handleDrop;
+                });
+                
+                checkWinCondition();
+            }
+
+            /**
+             * Handles clicking on the stock pile to draw a new card.
+             */
+            function handleStockClick() {
+                if (stockPile.length > 0) {
+                    const card = stockPile.pop();
+                    card.isFaceUp = true;
+                    wastePile.push(card);
+                } else {
+                    // If stock pile is empty, move cards from waste to stock
+                    stockPile = wastePile.reverse().map(card => {
+                        card.isFaceUp = false;
+                        return card;
+                    });
+                    wastePile = [];
+                }
+                renderGame();
+            }
+            
+            /**
+             * Checks if a move is valid according to Solitaire rules.
+             * @param {Object} movingCard The card being moved.
+             * @param {Object|null} destinationCard The card on the destination pile (or null if empty).
+             * @param {string} toPileType The type of the destination pile.
+             * @returns {boolean} True if the move is valid, false otherwise.
+             */
+            function isMoveValid(movingCard, destinationCard, toPileType) {
+                // Rule: To a foundation pile
+                if (toPileType === 'foundation') {
+                    // The moving card must be a single card
+                    if (draggedCards.length > 1) {
+                        return false;
+                    }
+                    // The moving card must be an Ace to an empty foundation pile
+                    if (!destinationCard) {
+                        return movingCard.rank === 'A';
+                    }
+                    // Or the rank must be one higher and the suit must match
+                    return rankValues[movingCard.rank] === rankValues[destinationCard.rank] + 1 &&
+                           movingCard.suit === destinationCard.suit;
+                }
+                
+                // Rule: To a tableau pile
+                if (toPileType === 'tableau') {
+                    // The moving card must be a King to an empty tableau pile
+                    if (!destinationCard) {
+                        return movingCard.rank === 'K';
+                    }
+                    // Or the rank must be one lower and the color must be different
+                    return rankValues[movingCard.rank] === rankValues[destinationCard.rank] - 1 &&
+                           suitColors[movingCard.suit] !== suitColors[destinationCard.suit];
+                }
+                
+                return false;
+            }
+
+            /**
+             * Moves cards from one pile to another.
+             * @param {string} fromPileType The type of the source pile.
+             * @param {number} fromPileIndex The index of the source pile.
+             * @param {string} toPileType The type of the destination pile.
+             * @param {number} toPileIndex The index of the destination pile.
+             * @param {Array} cardsToMove The array of card objects to move.
+             */
+            function moveCards(fromPileType, fromPileIndex, toPileType, toPileIndex, cardsToMove) {
+                const sourcePile = getPile(fromPileType, fromPileIndex);
+                const destinationPile = getPile(toPileType, toPileIndex);
+
+                // Remove cards from the source pile
+                const startIndex = sourcePile.indexOf(cardsToMove[0]);
+                sourcePile.splice(startIndex, cardsToMove.length);
+
+                // Add cards to the destination pile
+                destinationPile.push(...cardsToMove);
+                
+                // Flip the new top card in the source tableau pile if there is one
+                if (fromPileType === 'tableau' && sourcePile.length > 0) {
+                    sourcePile[sourcePile.length - 1].isFaceUp = true;
+                }
+                
+                renderGame();
+            }
+
+            /**
+             * Gets a pile array by type and index.
+             * @param {string} pileType The type of pile.
+             * @param {number} pileIndex The index of the pile.
+             * @returns {Array|null} The pile array, or null if not found.
+             */
+            function getPile(pileType, pileIndex) {
+                switch (pileType) {
+                    case 'tableau': return tableauPiles[pileIndex];
+                    case 'foundation': return foundationPiles[pileIndex];
+                    case 'waste': return wastePile;
+                    case 'stock': return stockPile;
+                    default: return null;
+                }
+            }
+
+            /**
+             * Gets the top card of a specific pile.
+             * @param {string} pileType The type of pile.
+             * @param {number} pileIndex The index of the pile.
+             * @returns {Object|null} The top card object, or null if the pile is empty.
+             */
+            function getTopCard(pileType, pileIndex) {
+                const pile = getPile(pileType, pileIndex);
+                return pile.length > 0 ? pile[pile.length - 1] : null;
+            }
+
+            /**
+             * Checks if the game has been won.
+             */
+            function checkWinCondition() {
+                const isWon = foundationPiles.every(pile => pile.length === 13);
+                if (isWon) {
+                    showMessage('Congratulations! You won!');
+                }
+            }
+
+            // --- Drag and Drop Handlers ---
+            function handleDragStart(e) {
+                const pileType = e.target.dataset.pileType;
+                const pileIndex = parseInt(e.target.dataset.pileIndex);
+                const cardIndex = parseInt(e.target.dataset.cardIndex);
+
+                const sourcePile = getPile(pileType, pileIndex);
+                
+                // For tableau, we can drag a stack of cards
+                if (pileType === 'tableau' && cardIndex < sourcePile.length - 1) {
+                    draggedCards = sourcePile.slice(cardIndex);
+                } else {
+                    // For waste and foundation, only the top card can be moved
+                    draggedCards = [sourcePile[cardIndex]];
+                }
+                
+                draggedFrom = { pileType, pileIndex, cardIndex };
+                e.dataTransfer.setData('text/plain', 'card-data'); // Required for Firefox to work
+            }
+            
+            function allowDrop(e) {
+                e.preventDefault();
+            }
+            
+            function handleDrop(e) {
+                e.preventDefault();
+                
+                const dropTarget = e.target.closest('[data-pile-type]');
+                if (!dropTarget) return;
+
+                const toPileType = dropTarget.dataset.pileType;
+                const toPileIndex = parseInt(dropTarget.dataset.pileIndex);
+
+                if (!draggedFrom) return;
+
+                const fromPileType = draggedFrom.pileType;
+                const fromPileIndex = draggedFrom.pileIndex;
+                const fromCardIndex = draggedFrom.cardIndex;
+                
+                const movingCard = draggedCards[0];
+                const destinationCard = getTopCard(toPileType, toPileIndex);
+
+                if (isMoveValid(movingCard, destinationCard, toPileType)) {
+                    moveCards(fromPileType, fromPileIndex, toPileType, toPileIndex, draggedCards);
+                } else {
+                    showMessage('Invalid move!');
+                }
+
+                // Reset drag state
+                draggedCards = [];
+                draggedFrom = null;
+            }
+
+            // --- Event Listeners and Initial Setup ---
+            newGameButton.addEventListener('click', initGame);
+            closeMessageButton.addEventListener('click', hideMessage);
+            howToPlayLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                showMessage('The goal of Solitaire is to move all cards to the four foundation piles, organized by suit from Ace to King. You can move cards between tableau piles by stacking them in descending order and alternating colors. Enjoy!');
+            });
+            
+            // Add drop listeners to the tableau and foundation piles
+            const piles = document.querySelectorAll('.tableau-pile, .foundation-pile, #waste-pile');
+            piles.forEach(pile => {
+                pile.addEventListener('dragover', allowDrop);
+                pile.addEventListener('drop', handleDrop);
+            });
+            
+            // Start a new game on load
+            initGame();
+        });
+    </script>
+</body>
+</html>
