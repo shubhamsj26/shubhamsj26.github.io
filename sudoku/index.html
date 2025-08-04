@@ -1,120 +1,201 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Play Sudoku Challenge online for free. Choose difficulty levels and solve puzzles!">
-  <meta name="keywords" content="Sudoku, Online Sudoku, Sudoku Game, Puzzle, Logic Game">
-  <meta name="author" content="ToolsNgames">
-  <title>Sudoku Challenge - ToolsNgames</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Play a fun and challenging Sudoku game online. Generate puzzles, validate moves, and solve instantly!" />
+  <meta name="keywords" content="Sudoku, Sudoku game, online puzzle, play Sudoku, sudoku generator" />
+  <meta name="author" content="ToolsNgames" />
+  <title>Sudoku Game - ToolsNgames</title>
   <style>
     body {
-      background-color: #f1f2f7;
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
+
     header, footer {
-      background-color: #2f2f2f;
-      color: white;
+      width: 100%;
+      text-align: center;
       padding: 1rem;
-      text-align: center;
+      background-color: #333;
+      color: white;
     }
-    .container {
-      text-align: center;
-      margin-top: 2rem;
+
+    h1 {
+      margin-top: 20px;
+      color: #333;
     }
-    .sudoku-board {
+
+    #sudoku-board {
+      margin-top: 20px;
       display: grid;
       grid-template-columns: repeat(9, 40px);
       grid-template-rows: repeat(9, 40px);
       gap: 2px;
-      justify-content: center;
-      margin: 1rem auto;
     }
-    .cell {
-      background: white;
-      border: 1px solid #ccc;
+
+    input.sudoku-cell {
+      width: 38px;
+      height: 38px;
       text-align: center;
       font-size: 18px;
-      line-height: 40px;
+      border: 1px solid #999;
     }
-    .cell input {
-      width: 100%;
-      height: 100%;
-      border: none;
-      text-align: center;
-      font-size: 18px;
+
+    input.prefilled {
+      background-color: #ddd;
     }
+
+    .controls {
+      margin-top: 20px;
+    }
+
     .controls button {
-      margin: 0.3rem;
-    }
-    .number-pad {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 1rem;
-    }
-    .number-pad button {
-      width: 40px;
-      height: 40px;
+      padding: 10px 20px;
+      margin: 0 10px;
+      font-size: 16px;
     }
   </style>
 </head>
+
 <body>
+  <header>
+    <h2>🧩 Sudoku Game by ToolsNgames</h2>
+  </header>
 
-<header>
-  <h1>Sudoku Challenge</h1>
-</header>
+  <h1>Play Sudoku</h1>
 
-<div class="container">
-  <div class="mb-3">
-    <label for="difficulty" class="form-label">Difficulty:</label>
-    <select id="difficulty" class="form-select w-auto d-inline-block">
-      <option>Beginner</option>
-      <option>Medium</option>
-      <option>Tough</option>
-    </select>
-    <button class="btn btn-primary">New Game</button>
-    <button class="btn btn-success">Hint (3)</button>
-    <button class="btn btn-warning">Validate</button>
-    <button class="btn btn-danger">Solve Puzzle</button>
+  <div id="sudoku-board"></div>
+
+  <div class="controls">
+    <button onclick="generatePuzzle()">🆕 New Game</button>
+    <button onclick="checkSolution()">✅ Check</button>
+    <button onclick="solvePuzzle()">💡 Solve</button>
   </div>
-  <div><strong>Time:</strong> <span id="timer">00:00</span></div>
-  <div class="sudoku-board" id="sudoku-board">
-    <!-- Sudoku grid will be generated here -->
-  </div>
-  <div class="number-pad">
-    <button class="btn btn-outline-primary">1</button>
-    <button class="btn btn-outline-primary">2</button>
-    <button class="btn btn-outline-primary">3</button>
-    <button class="btn btn-outline-primary">4</button>
-    <button class="btn btn-outline-primary">5</button>
-    <button class="btn btn-outline-primary">6</button>
-    <button class="btn btn-outline-primary">7</button>
-    <button class="btn btn-outline-primary">8</button>
-    <button class="btn btn-outline-primary">9</button>
-    <button class="btn btn-outline-danger">⌫</button>
-  </div>
-</div>
 
-<footer>
-  <p>&copy; 2025 ToolsNgames. All rights reserved.</p>
-</footer>
+  <footer>
+    <p>&copy; 2025 ToolsNgames. All rights reserved.</p>
+  </footer>
 
-<script>
-  const board = document.getElementById("sudoku-board");
-  for (let i = 0; i < 81; i++) {
-    const cell = document.createElement("div");
-    cell.classList.add("cell");
-    const input = document.createElement("input");
-    input.setAttribute("maxlength", "1");
-    input.setAttribute("type", "text");
-    input.setAttribute("pattern", "[1-9]");
-    cell.appendChild(input);
-    board.appendChild(cell);
-  }
-</script>
+  <script>
+    const board = document.getElementById("sudoku-board");
+    let originalBoard = [];
 
+    function generatePuzzle() {
+      board.innerHTML = "";
+      originalBoard = createSudoku();
+      for (let i = 0; i < 81; i++) {
+        const input = document.createElement("input");
+        input.type = "text";
+        input.maxLength = 1;
+        input.classList.add("sudoku-cell");
+        const val = originalBoard[Math.floor(i / 9)][i % 9];
+        if (val !== 0) {
+          input.value = val;
+          input.disabled = true;
+          input.classList.add("prefilled");
+        }
+        board.appendChild(input);
+      }
+    }
+
+    function createSudoku() {
+      // Simple static puzzle for demo
+      return [
+        [5, 3, 0, 0, 7, 0, 0, 0, 0],
+        [6, 0, 0, 1, 9, 5, 0, 0, 0],
+        [0, 9, 8, 0, 0, 0, 0, 6, 0],
+        [8, 0, 0, 0, 6, 0, 0, 0, 3],
+        [4, 0, 0, 8, 0, 3, 0, 0, 1],
+        [7, 0, 0, 0, 2, 0, 0, 0, 6],
+        [0, 6, 0, 0, 0, 0, 2, 8, 0],
+        [0, 0, 0, 4, 1, 9, 0, 0, 5],
+        [0, 0, 0, 0, 8, 0, 0, 7, 9],
+      ];
+    }
+
+    function checkSolution() {
+      const cells = document.querySelectorAll(".sudoku-cell");
+      let valid = true;
+      const grid = Array.from({ length: 9 }, () => Array(9).fill(0));
+
+      cells.forEach((cell, i) => {
+        const row = Math.floor(i / 9);
+        const col = i % 9;
+        const val = parseInt(cell.value);
+        if (!isNaN(val)) grid[row][col] = val;
+      });
+
+      // Basic validation only
+      for (let i = 0; i < 9; i++) {
+        const row = new Set();
+        const col = new Set();
+        for (let j = 0; j < 9; j++) {
+          if (grid[i][j] && row.has(grid[i][j])) valid = false;
+          row.add(grid[i][j]);
+          if (grid[j][i] && col.has(grid[j][i])) valid = false;
+          col.add(grid[j][i]);
+        }
+      }
+
+      alert(valid ? "✅ Looks good!" : "❌ Invalid solution.");
+    }
+
+    function solvePuzzle() {
+      const cells = document.querySelectorAll(".sudoku-cell");
+      const grid = JSON.parse(JSON.stringify(originalBoard));
+      if (solve(grid)) {
+        cells.forEach((cell, i) => {
+          const row = Math.floor(i / 9);
+          const col = i % 9;
+          cell.value = grid[row][col];
+        });
+      } else {
+        alert("❌ Unable to solve.");
+      }
+    }
+
+    function solve(board) {
+      for (let row = 0; row < 9; row++) {
+        for (let col = 0; col < 9; col++) {
+          if (board[row][col] === 0) {
+            for (let num = 1; num <= 9; num++) {
+              if (isSafe(board, row, col, num)) {
+                board[row][col] = num;
+                if (solve(board)) return true;
+                board[row][col] = 0;
+              }
+            }
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+
+    function isSafe(board, row, col, num) {
+      for (let x = 0; x < 9; x++) {
+        if (board[row][x] === num || board[x][col] === num) return false;
+      }
+      const startRow = row - (row % 3);
+      const startCol = col - (col % 3);
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+          if (board[startRow + i][startCol + j] === num) return false;
+        }
+      }
+      return true;
+    }
+
+    // Auto-generate on load
+    window.onload = generatePuzzle;
+  </script>
 </body>
+
 </html>
