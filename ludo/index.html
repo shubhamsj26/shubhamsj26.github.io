@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ludo Game - 2 Player</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background: #f2f2f2;
+    }
+    h1 {
+      color: #333;
+    }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(15, 40px);
+      grid-template-rows: repeat(15, 40px);
+      margin: 20px auto;
+      border: 2px solid #333;
+    }
+    .cell {
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    .player1, .player2 {
+      font-weight: bold;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .player1 {
+      background-color: red;
+    }
+    .player2 {
+      background-color: green;
+    }
+    #rollBtn {
+      padding: 10px 20px;
+      font-size: 18px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Ludo Game (2 Players)</h1>
+  <div id="board" class="board"></div>
+  <p>Current Turn: <span id="turn">Player 1</span></p>
+  <p>Dice Rolled: <span id="dice">-</span></p>
+  <button id="rollBtn">Roll Dice</button>
+
+  <script src="script.js"></script>
+</body>
+</html>
