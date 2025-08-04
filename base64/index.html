@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base64 Encoder/Decoder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Custom message box styling */
+        .message-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 1.5rem;
+            background-color: #fff;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            text-align: center;
+            display: none;
+            max-width: 300px;
+        }
+
+        .message-box-content {
+            margin-bottom: 1rem;
+        }
+
+        .message-box-button {
+            padding: 0.5rem 1rem;
+            background-color: #2563eb;
+            color: white;
+            border-radius: 0.25rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <!-- Main Container -->
+    <div class="bg-white rounded-xl shadow-2xl p-6 sm:p-8 w-full max-w-2xl">
+        <h1 class="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-6">Base64 Encoder/Decoder</h1>
+
+        <!-- Base64 Encoder/Decoder Tool -->
+        <div class="bg-gray-50 rounded-lg p-4 sm:p-6 shadow-md">
+            <p class="text-gray-500 mb-4">Encode or decode text to and from Base64 format.</p>
+            
+            <div class="space-y-4">
+                <!-- Input text area -->
+                <textarea 
+                    id="base64-input" 
+                    class="w-full h-24 p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow" 
+                    placeholder="Enter text to encode or Base64 string to decode..."
+                ></textarea>
+                
+                <!-- Action buttons -->
+                <div class="flex justify-center space-x-4">
+                    <button id="encode-btn" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+                        Encode
+                    </button>
+                    <button id="decode-btn" class="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors">
+                        Decode
+                    </button>
+                </div>
+
+                <!-- Output text area -->
+                <textarea 
+                    id="base64-output" 
+                    class="w-full h-24 p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow" 
+                    placeholder="Encoded/Decoded output will appear here..."
+                    readonly
+                ></textarea>
+
+                <!-- Copy button -->
+                <div class="flex justify-end">
+                    <button id="copy-btn" class="px-4 py-2 bg-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-400 transition-colors">
+                        Copy
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Message Box for Alerts -->
+    <div id="message-box" class="message-box">
+        <p id="message-content" class="message-box-content text-gray-700"></p>
+        <button id="message-close-btn" class="message-box-button">OK</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Elements ---
+            const base64Input = document.getElementById('base64-input');
+            const base64Output = document.getElementById('base64-output');
+            const encodeBtn = document.getElementById('encode-btn');
+            const decodeBtn = document.getElementById('decode-btn');
+            const copyBtn = document.getElementById('copy-btn');
+            const messageBox = document.getElementById('message-box');
+            const messageContentEl = document.getElementById('message-content');
+            const closeMessageBtn = document.getElementById('message-close-btn');
+
+            // --- Utility Functions for Message Box ---
+            /**
+             * Displays a custom message box with the given message.
+             * @param {string} message The message to display.
+             */
+            function showMessage(message) {
+                messageContentEl.textContent = message;
+                messageBox.style.display = 'block';
+            }
+
+            /**
+             * Hides the custom message box.
+             */
+            function hideMessage() {
+                messageBox.style.display = 'none';
+            }
+            
+            // --- Core Functionality ---
+
+            /**
+             * Encodes the text from the input area to Base64.
+             */
+            function encodeBase64() {
+                const inputText = base64Input.value;
+                try {
+                    const encodedText = btoa(inputText);
+                    base64Output.value = encodedText;
+                } catch (e) {
+                    showMessage('Error: Could not encode the text.');
+                    base64Output.value = '';
+                }
+            }
+
+            /**
+             * Decodes the Base64 string from the input area to text.
+             */
+            function decodeBase64() {
+                const inputText = base64Input.value;
+                try {
+                    const decodedText = atob(inputText);
+                    base64Output.value = decodedText;
+                } catch (e) {
+                    showMessage('Error: The input is not a valid Base64 string.');
+                    base64Output.value = '';
+                }
+            }
+
+            /**
+             * Copies the text from the output area to the clipboard.
+             */
+            function copyToClipboard() {
+                const textToCopy = base64Output.value;
+                if (!textToCopy) {
+                    showMessage('There is no text to copy.');
+                    return;
+                }
+
+                // Create a temporary textarea to hold the text to copy
+                const textarea = document.createElement('textarea');
+                textarea.value = textToCopy;
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    // Use document.execCommand for better cross-browser compatibility within iframes
+                    document.execCommand('copy');
+                    showMessage('Text copied to clipboard!');
+                } catch (e) {
+                    showMessage('Failed to copy text. Please try again.');
+                }
+                document.body.removeChild(textarea);
+            }
+
+            // --- Event Listeners ---
+            encodeBtn.addEventListener('click', encodeBase64);
+            decodeBtn.addEventListener('click', decodeBase64);
+            copyBtn.addEventListener('click', copyToClipboard);
+            closeMessageBtn.addEventListener('click', hideMessage);
+        });
+    </script>
+</body>
+</html>
