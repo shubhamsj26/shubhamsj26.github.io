@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced QR Code Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- QRCode.js library for generating QR codes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" xintegrity="sha512-CNgBLt9o4bH/xGvjF1/N9cQ7OaX/kP6+hV6yA5x+R9/gA6y1K1Bf9g/tV+sXW4f5g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Custom message box styling */
+        .message-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 1.5rem;
+            background-color: #fff;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            text-align: center;
+            display: none;
+            max-width: 300px;
+        }
+
+        .message-box-content {
+            margin-bottom: 1rem;
+        }
+
+        .message-box-button {
+            padding: 0.5rem 1rem;
+            background-color: #2563eb;
+            color: white;
+            border-radius: 0.25rem;
+            cursor: pointer;
+        }
+
+        .qrcode-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #ffffff;
+            border-radius: 0.5rem;
+        }
+        
+        .social-logo-placeholder {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 2rem;
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-500 to-purple-600 min-h-screen flex items-center justify-center p-4">
+
+    <!-- Main Container -->
+    <div class="bg-white bg-opacity-95 rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-2xl backdrop-blur-sm">
+        <h1 class="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-8">QR Code Tools</h1>
+
+        <!-- Tools Container -->
+        <div class="space-y-6">
+
+            <!-- Basic QR Code Generator Tool -->
+            <div class="bg-gray-50 rounded-xl p-4 sm:p-6 shadow-lg">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-4">Basic QR Code Generator</h2>
+                <p class="text-gray-500 mb-4">Generate a simple QR code from a URL or text with customizable colors.</p>
+
+                <div class="space-y-4">
+                    <!-- QR code input -->
+                    <textarea 
+                        id="qrcode-input" 
+                        class="w-full h-24 p-4 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-indigo-400 transition-all duration-300" 
+                        placeholder="Enter text or URL for the QR code..."
+                    ></textarea>
+                    
+                    <!-- Color pickers -->
+                    <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-between items-center">
+                        <div class="flex items-center space-x-2">
+                            <label for="fg-color" class="text-gray-700">Foreground Color:</label>
+                            <input type="color" id="fg-color" value="#0e7490" class="w-12 h-8 border-2 border-gray-300 rounded cursor-pointer">
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <label for="bg-color" class="text-gray-700">Background Color:</label>
+                            <input type="color" id="bg-color" value="#f8fafc" class="w-12 h-8 border-2 border-gray-300 rounded cursor-pointer">
+                        </div>
+                    </div>
+
+                    <!-- Generate button -->
+                    <div class="flex justify-center">
+                        <button id="generate-qrcode-btn" class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-emerald-500 to-green-600 text-white font-bold rounded-xl shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300">
+                            Generate QR Code
+                        </button>
+                    </div>
+
+                    <!-- QR code output -->
+                    <div id="basic-qrcode-container" class="qrcode-container rounded-xl shadow-inner">
+                        <!-- QR code will be rendered here -->
+                    </div>
+
+                    <!-- Download button -->
+                    <div class="flex justify-end mt-4">
+                        <button id="download-qrcode-btn" class="w-full sm:w-auto px-6 py-3 bg-gray-300 text-gray-800 font-semibold rounded-xl shadow-md hover:bg-gray-400 transform hover:scale-105 transition-all duration-300">
+                            Download
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Social Media QR Code Generator -->
+            <div class="bg-gray-50 rounded-xl p-4 sm:p-6 shadow-lg">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-4">Social Media QR Code Generator</h2>
+                <p class="text-gray-500 mb-4">Generate a QR code with a social media logo embedded in the center.</p>
+
+                <div class="space-y-4">
+                    <!-- Social media platform selection -->
+                    <div>
+                        <label for="social-platform" class="block text-gray-700 font-medium mb-1">Select Platform:</label>
+                        <select id="social-platform" class="w-full p-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-indigo-400 transition-all duration-300">
+                            <option value="none">-- Select a platform --</option>
+                            <option value="whatsapp">WhatsApp</option>
+                            <option value="instagram">Instagram</option>
+                            <option value="youtube">YouTube</option>
+                        </select>
+                    </div>
+
+                    <!-- Input for non-WhatsApp platforms -->
+                    <div id="social-link-input" class="space-y-4">
+                        <textarea 
+                            id="social-qrcode-input" 
+                            class="w-full h-24 p-4 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-indigo-400 transition-all duration-300" 
+                            placeholder="Enter the URL or handle (e.g., 'https://www.youtube.com/user/username')..."
+                        ></textarea>
+                    </div>
+                    
+                    <!-- Inputs for WhatsApp -->
+                    <div id="whatsapp-inputs" class="space-y-4 hidden">
+                        <input
+                            type="tel"
+                            id="whatsapp-phone"
+                            class="w-full p-4 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-indigo-400 transition-all duration-300"
+                            placeholder="Enter phone number (e.g., 918828372006)"
+                        />
+                        <textarea
+                            id="whatsapp-text"
+                            class="w-full h-24 p-4 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-indigo-400 transition-all duration-300"
+                            placeholder="Enter a pre-filled message (optional)..."
+                        ></textarea>
+                    </div>
+
+                    <!-- Color pickers -->
+                    <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-between items-center">
+                        <div class="flex items-center space-x-2">
+                            <label for="social-fg-color" class="text-gray-700">Foreground Color:</label>
+                            <input type="color" id="social-fg-color" value="#0e7490" class="w-12 h-8 border-2 border-gray-300 rounded cursor-pointer">
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <label for="social-bg-color" class="text-gray-700">Background Color:</label>
+                            <input type="color" id="social-bg-color" value="#f8fafc" class="w-12 h-8 border-2 border-gray-300 rounded cursor-pointer">
+                        </div>
+                    </div>
+
+                    <!-- Generate button -->
+                    <div class="flex justify-center">
+                        <button id="generate-social-qrcode-btn" class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-emerald-500 to-green-600 text-white font-bold rounded-xl shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300">
+                            Generate Social QR Code
+                        </button>
+                    </div>
+
+                    <!-- QR code output -->
+                    <div id="social-qrcode-container" class="qrcode-container rounded-xl shadow-inner">
+                        <!-- Social media QR code will be rendered here -->
+                    </div>
+
+                    <!-- Download button -->
+                    <div class="flex justify-end mt-4">
+                        <button id="download-social-qrcode-btn" class="w-full sm:w-auto px-6 py-3 bg-gray-300 text-gray-800 font-semibold rounded-xl shadow-md hover:bg-gray-400 transform hover:scale-105 transition-all duration-300">
+                            Download
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Custom Message Box for Alerts -->
+    <div id="message-box" class="message-box">
+        <p id="message-content" class="message-box-content text-gray-700"></p>
+        <button id="message-close-btn" class="message-box-button">OK</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Common functions ---
+            const messageBox = document.getElementById('message-box');
+            const messageContentEl = document.getElementById('message-content');
+            const closeMessageBtn = document.getElementById('message-close-btn');
+
+            /**
+             * Displays a custom message box with the given message.
+             * @param {string} message The message to display.
+             */
+            function showMessage(message) {
+                messageContentEl.textContent = message;
+                messageBox.style.display = 'block';
+            }
+
+            /**
+             * Hides the custom message box.
+             */
+            function hideMessage() {
+                messageBox.style.display = 'none';
+            }
+            
+            // --- Basic QR Code Generator Logic ---
+            const qrcodeInput = document.getElementById('qrcode-input');
+            const basicQrcodeContainer = document.getElementById('basic-qrcode-container');
+            const generateQrcodeBtn = document.getElementById('generate-qrcode-btn');
+            const downloadQrcodeBtn = document.getElementById('download-qrcode-btn');
+            const fgColorInput = document.getElementById('fg-color');
+            const bgColorInput = document.getElementById('bg-color');
+            
+            let basicQrcode = null;
+
+            generateQrcodeBtn.addEventListener('click', () => {
+                const text = qrcodeInput.value.trim();
+                const fgColor = fgColorInput.value;
+                const bgColor = bgColorInput.value;
+
+                if (!text) {
+                    showMessage("Please enter some text or a URL to generate a QR code.");
+                    return;
+                }
+
+                // Clear previous QR code
+                basicQrcodeContainer.innerHTML = '';
+                
+                // Initialize the QR code generator with options
+                basicQrcode = new QRCode(basicQrcodeContainer, {
+                    text: text,
+                    width: 200,
+                    height: 200,
+                    colorDark: fgColor,
+                    colorLight: bgColor,
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            });
+
+            downloadQrcodeBtn.addEventListener('click', () => {
+                if (!basicQrcode) {
+                    showMessage("Please generate a QR code first.");
+                    return;
+                }
+                
+                // Get the canvas element from the QR code container
+                const canvas = basicQrcodeContainer.querySelector('canvas');
+                if (canvas) {
+                    const link = document.createElement('a');
+                    link.download = 'qrcode.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                } else {
+                    showMessage("QR code image is not available for download.");
+                }
+            });
+
+            // --- Social Media QR Code Generator Logic ---
+            const socialPlatformSelect = document.getElementById('social-platform');
+            const socialQrcodeContainer = document.getElementById('social-qrcode-container');
+            const socialLinkInput = document.getElementById('social-link-input');
+            const socialQrcodeInput = document.getElementById('social-qrcode-input');
+            const whatsappInputs = document.getElementById('whatsapp-inputs');
+            const whatsappPhoneInput = document.getElementById('whatsapp-phone');
+            const whatsappTextInput = document.getElementById('whatsapp-text');
+            const socialFgColorInput = document.getElementById('social-fg-color');
+            const socialBgColorInput = document.getElementById('social-bg-color');
+            const generateSocialQrcodeBtn = document.getElementById('generate-social-qrcode-btn');
+            const downloadSocialQrcodeBtn = document.getElementById('download-social-qrcode-btn');
+
+            const logos = {
+                'whatsapp': 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+PHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIHJ4PSIyMCIgcnk9IjIwIiBmaWxsPSIjMjVEMzY2Ii8+PHBhdGggZmlsbD0iI2ZmZmZmZiIgZD0iTTc2LjAxMyA2MS4xNjhjLTQuMDM3LTYuNjg4LTIuMjQzLTkuMTE4LS45MDgtMTAuNjUxIDMuMzY0LTMuNzU0IDMuNjg0LTIwLjE4OS05LjM5MS0zNC41MjUtMTUuMTU4LTE4LjM5NS00NC4xMi02LjE3LTQ4LjI4NiA0LjAzLTQuMTY2IDEwLjIwMS01LjYyIDI2LjQxNiAxLjE0MiAzMy44NjcgNi4wOTIgNi42MTkgMTYuODcxIDkuMDgyIDI3LjM2NiA4LjY3OSA5LjQ0OS0uMzc0IDE4LjA5My01LjMyNyAyNC43NDktMTIuMjk3eiIvPjxwYXRoIGZpbGw9IiNmZmZmZmYiIGQ9Ik00Ny4zOTcgNzUuODdjLS4xNzctLjE1MS0uNDU5LS4yMjUtLjc1My0uMjI1LTIuNjU2LS4zNjktNC4yNDQtLjU0NS01LjAxNC0uNjYxLTIuNTUxLS4yMzUtNi4yNzUtLjM1NS05LjA4NyAxLjY3LTQuNzkzIDMuNDYyLTguNDIgNy4zNjEtNy42MyAxMy41MjggMy40NjkgMTIuNzY0IDE1LjExNiAxMy42NDkgMTkuMjUyIDEzLjY4MiAxMi4yNi4wOTcgMTYuNDI1LTMuMjMgMTcuNTAyLTguMTM0IDEuMDg2LTQuOTEyIDEuOTY3LTMuNTMzLS41OTctNS44OTgtNC41ODEtNC4zMTgtOS45MzMtNy4zNy0xNS41MjktNy45MDZ6Ii8+PHBhdGggZmlsbD0iI2ZmZmZmZiIgZD0iTTMyLjQ5MSA0MS43ODJjLTEuMjQtMS4xNzUtMi45OTItLjU0NS0zLjY5MS0uOTMzLTIuNzYxLTEuNTMtNC45OTktMy4xMTQtNi4yNzMtNC42OTYtMi4xNDMtMi43MTEtMi4xNzQtNS4xNjctLjY5Ny03LjE1MSAyLjU5NC0xLjU4NSA0LjYwNC0uNTU3IDYuOTc2LS44MjQgMy4xNTktLjM1NiA0LjY0OS0uMjIyIDYuMjgxIDEuNjQ3IDEuNjY3IDIuMTMyIDMuNjU1IDIuODY0IDUuMTg1IDQuMzggMi42MTYgMi45NzcgNC44MiA1LjgyIDcuOTgyIDcuMTk0IDMuMjQyIDEuMzMgNi4wNTMgMi4yOSA5LjI0MSAxLjU4OSAzLjE4OC0uNzAyIDYuNTQ3LTEuNzQ4IDkuNjQtNC4xMTkgMi4zNTktMS45ODcgMi42NzUtNC40NDMgMS42MjgtNi4zNTctLjEwOC0uMjAxLS4yMzItLjIxOS0uMzg3LS4yNTItLjM5MS0uMDg1LS45OTEtLjM0OC0xLjYwOC0uNTcxLTEuMjA3LS40MzQtMi40NjYtLjU4NC0zLjA4MS0uNjc1LS43MjUtLjExLS44MzctLjM5NC0uODMtLjc5MyAwLS40NTEgMC0uODk1LS4wNTgtMS4zMDgtLjEyNC0uODczLS4zODctMS43NzQtLjg2LTEuOTI4LTEuOTI4LS42MTQtMy42MzctLjA4Mi01LjEzMiAxLjQ3LTMuNDkyIDMuNjQ1LTMuNTggOC44NTItNi4wMzggMTIuNTQ0LTEuODYgMy4zMTItMy43NzggNS4wNTUtNS44MjQgNi41ODMtMi4wNDQgMS41MjQtNC41MDUgMi43NzEtNi45NTIgMy4wMDctMi41MDYuMjQ2LTUuMDQ4LS4wOTktNy4wNjEtMS42NjktMi4wMTMtMS41NzQtMy41ODMtMy40MjktNS4yODQtNC44NzUtMS42NjctMS40MTgtMy4zOTctMi40MTQtNS4zNTMtMy42NTZ6Ii8+PC9zdmc+',
+                'instagram': 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+PHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIHJ4PSIyMCIgcnk9IjIwIiBmaWxsPSIjRTQ0MDVGIi8+PHBhdGggZD0iTTUwLjkxOCAyNi4zOTZjLTEyLjA5NCAwLTI0LjA3My0uMDc0LTM1Ljg1My4wODMtMS43NjQuMDI1LTMuMjQ0LjI3NS00LjY2MSAxLjQ5NS0xLjQwMyAxLjIzOC0yLjMwOCAyLjc0NS0yLjUzIDQuOTM4LS42MTcgNS43NDEtMS4yMjcgMTEuNDgyLTEuMjYgMTguMzM2LS4wMzMgNi43OTUgLjU3NyAxMi41MzMgMS4yOTcgMTkuMTYzLjIyMyAyLjE2Ni41MTQgMy45NzcgMi41OTIgNS4xMjggMi4yNjUgMS4zMDUgNC45MzcgMS41MzEgNy42NTQgMS41NzIgMTIuMzQzLjE5NiAyNC44MDguMTk1IDM3LjIzOC4wMDkuMTgxLS4wMDIgMy43NjEtLjAwNyA1LjQ2MS0uMzU0IDEuMjI0LS4yNjMgMi4wNzQtLjg4OCAyLjc0My0yLjEyNSAxLjA1LTEuNzU5IDEuNjg1LTQuMTU0IDIuMjQzLTYuMzg1LjY5Ni0yLjY3IDEuNDQ5LTUuNDA0IDEuNzMyLTguMzU4LjMzOS01LjcxMSAxLjQ2OC0xMS41OTQgMS4wNDQtMTcuNDU3LS40NTYtNi4zNDEtMS40NzYtMTIuNjg5LTIuMzgyLTE4Ljk2Mi0uMDctLjQ4NS0uMjEyLS45ODQtLjQ2Ni0xLjQ0LS41MDktLjk1Mi0xLjQ1My0xLjM2NS0yLjU0Ny0xLjU0Ni0xLjI0LS4xNzQtMi41MzYtLjI1NS0zLjgyMS0uMjU1LTcuNjAzLS4wMDUtMTUuMjA2LjA3NC0yMi44MDkuMDc5LS4xNTQgMC0uMzA4IDAtLjQ2NiAwem0yNS4wMTggMTMuOTg5YzcuNDczLS40MzggMTUuMDI3LS40MTIgMjIuNDI3LjE1NyAyLjM3My4xODUgMy42MSAxLjIwMiA0LjI0MSAyLjM2Ny43MjUgMS4zMDcuOTUzIDIuOTkyLjkyIDQuOTU0LS4wNTQgMi43NS0uMTIgNS41MTUtLjE5NSAzMC4wNTQtLjE1IDUuMTQtLjIwMiA3LjQyLS44OTMgOS42OTYtLjY0NiAyLjEyNS0xLjgyOSAzLjM0OC0zLjcwNiAzLjU1Mi0xLjQ0My4xMzQtMi45NjguMTQyLTMwLjYzLjE5MS00LjExNy4wMDktOC4xODctLjA2OS0xMi4zMzctLjEyNi0yLjIxLS4wMzEtMy43NzMtLjE5Ny00Ljc5LS41NzgtMS40MjQtLjU0NS0yLjU1MS0xLjE2Mi0zLjM1OS0yLjQxMi0uODI3LTEuMjc0LS45MDItMi43NzEtLjk0OC00LjQ4MS0uMjk4LTEwLjk1NS0uNDEzLTIyLjI2LS41NzctMzMuMjA3LS4wMjctMS42NjYtLjAxOC0zLjQwOC4wNzEtNS4wNzEuMjg3LTIuNTIuOTQtNC42MjcgMi43MzYtNS44ODMgMS43MjYtMS4xNjUgMy43MDctMS41NTggNi4xMDUtMS41Mjd6bS00LjM2MiAyLjQxYy0xMi4zMy0uMDkxLTI0LjY1My4wNDMtMzYuOTQyLjE3Mi0zLjM1LjAyMy01LjMyMi4xMDQtNi43NDEuMjA3LTIuNjU2LS4zNy00Ljk3My0uNDQ0LTYuNDY5LTEuMTIyLTEuODU3LS44MjctMy4wMTQtMS45NTktMy42MTctNC4wODItLjMyNC0xLjExNy0uMjEtMi43MS0uMzIyLTQuMTMxLS40NTMtMTQuNTI3LS41NTYtMjkuNzEzLS41NjEtNDQuMDMzLS4wMDUtMTQuMTItLjIyMS0yOC4xMzcuNDQ5LTQyLjQ0MS43NjktMy41OTYgMS40NDctNi45OSA1LjI5My04LjY3OCAzLjEzMS0xLjM5IDYuNjUyLTEuNjE5IDEwLjE1NS0xLjY3NiA2Ljc5LS4xMTIgMTMuNzQ1LjAyNiAyMC42NTkuMTQ5IDEuMzUxLjAyNSAyLjkxNi40NjcgNC40MTguOTU1IDIuMDA2LjY1OSAzLjY0NSAxLjc3MyA0LjM2NSAzLjk1MyAxLjU2MyA0Ljc5MSAyLjQwNyA5LjcxNSAyLjU1OCAxNS41M2wxLjU1OC0uMTczYy44MDQtLjI1MiAyLjIxNi0uMTk5IDIuNTIzLS40OTcuNTktLjU3My42MTktMS45NjEuNzMtMi45MDQuMDQ4LS40MzIuMTItLjg4NS41MDEtMS4zOTkuNjQtLjk0MyAxLjQ3Ny0xLjcwNCAyLjQ2Ny0yLjE4MSAxLjA1LS41MTEgMi41MzktLjgwNyAzLjc0NC0uOTA2IDEuODc1LS4xNTUgMy42MTgtLjExOCA1LjU1NC4xOTIgNi4wMTMuOTczIDEzLjIzMiAxLjAyMiAxOS4zNjYuMzUyIDIuNjE2LS4yODYgNS40NTctLjM5MyA3LjcyMS0uMjE4LS44MDItLjA5Ny0xLjUyLS41NzQtMi4xNzQtMS4yMjctLjc0NS0uODU3LTEuMDMyLTEuOTItMS4wOTctMi45ODgtLjI3NC0uMDI3LS41ODItLjI0Ny0uOTYxLS42MDUtLTYuMTUtNS4wOTctMTEuOTgyLTUuNDc3LTE5LjgxOC01LjQ4My05Ljg0NS0uMDExLTE5LjY4NC4xNDQtMjkuNDg5LjA3OS01LjIzNC0uMDM0LTkuMjQyLjI1OC0xMi42MjggMS44NTMtNC4yMjMgMi4wMTktNS42MjggNC4zNzQtNi4yNDYgOC44MzItLjU1MSA0LjA1OC0uNzU4IDguNjAyLS44MjMgMTIuOTEtLjIxOCAxNC4zNjgtLjI3OCAyOC44NDItLjAyMiA0My4yMDYtLjAxOCAyLjY4Ny4wMTcgNS4zMTcuMzc1IDcuNzEuMDU4LjM4Mi4xNjcuNzcuMzAxIDEuMTU0LjMyNi45MzMuNzgyIDEuOTg0IDEuMjI3IDIuOTI3LjQ1IDkuMDY1IDEuNzgyIDE3Ljk3IDMuMTk4IDI2Ljk4MiAxLjQxNiA5LjAwMyAyLjc1OCAxNy41NTIgNC4wMyAyNi42NzcuMTczIDEuMTMxLjM1MiAxLjQ5LjYxIDIuMjQ0LjI3NS44MTcuNzcyIDEuNTggMS40OTcgMi4wMTcuMjIuMTM0LjQ0OC4yMjUuNjU5LjMxNy41MDcuMjI0IDEuMDM5LjQ0MiAxLjU4MS41ODkuMTU1LjA0MS4yODguMTExLjM1MS4zNDcuMTk3LjQ1MS4wNTIgMS4yOTcuMjI1IDEuODY0LjkxNCAyLjYyNyAzLjUyOSA1LjA5NSA3LjQwOSA2LjU2IDMuMTE5LjYxIDUuNDQ0LS41NTYgNy45NjEtMS42MTYgMy42MjgtMS41MzMgNi40MjQtMy42MDQgOS4wOTUtNS43NzcgMi4xMDgtMS43MTQgNC4yMjQtMy41MjkgNi4zOTctNS4yNzV6bTcuODE4IDcuMzU1YzUuNjY3LS4xMjcgMTEuMzM0LS4xNzIgMTcuMDM5LS4yMjcuMzMxLS4wMDMgLjY3My0uMDA4IDEuMDM0LS4wMDgtLjM4OC0uMDgtMS4wMTQtLjAxNS0xLjMxMS0uMDI3LS45OTQtLjAyNy0xLjk3My0uMDI3LTIuOTU3LS4wODQtLjk3MS0uMDU2LTEuMjgyLS4yMTItMS40OTktLjQxOS0uNDUxLS40MzctLjc4NC0uOTc1LTEuMTExLTEuNTMyLS41ODMtMS4wNS0xLjE3LTEuOTk5LTEuNTM5LTIuOTgyLS40NzYtMS4yNjctMS41MS0yLjE4MS0yLjU1NS0zLjAwOC0xLjQxMy0xLjEzMy0yLjczMi0yLjQyOC00LjA3My0zLjY4Mi0xLjQxMS0xLjMxOS0yLjg4OS0yLjUyMy00LjE2Ni0zLjgxMS0xLjUzNC0xLjU1MS0zLjA3MS0zLjA5MS00LjI5NS00LjgyLTEuMTMzLTEuNTUtMi4yMzktMy4zMDItMi43OTMtNS4yMTUtLjU0Ni0xLjg4My0uODI0LTQuMDktLjgwNC02LjM1NC0uMDA4LTEuMDQ4LS4xMi0yLjExNC0uMTQyLTMuMjc3LS4wNzgtNC4yMS4wOTEtOC40MTQtLjE2OS0xMi42MjctLjI5NS00LjY2LS4yNzUtOS40MzQtLjI5Ni0xNC40NDYuMDI4LS41OC4wNjgtMS4xNjIuMTIyLTEuNzQ3LjI3OC0yLjUyNC43MDUtNS4wOTkgMS41OTEtNy41MzguMjUzLS42OTcuNDk0LTEuMjQxLjU3MS0yLjAzOC41NjktLjQwNyAxLjQ4NS0uNjkzIDIuMzIyLS45MDcgMS40MzktLjM2NSAyLjkxNS0uNTgyIDQuNDQ2LS42M2MxLjUzMS0uMDQuMzU4LS4wNzkgNS44MzMtLjEzOCAyLjM0NS0uMDU1IDQuNzMyLS4wNzIgNy4xNTMtLjEwNCAxLjc4My0uMDI1IDMuNDI2LS4wNTIgNS4xMTkuMDkzIDEuNzI0LjE1MyAzLjQxMy41MDUgNS4wOTMuODg1IDEuMjU3LjI4NiAyLjE2OC43NzggMi44ODcgMS42MDguNzM0Ljg0NyAxLjEzNSAyLjAwMiAxLjM3MSAzLjA5OC4zNjEgMS40NjEuMzg0IDMuMDM2LjQ0OCA0LjU1NC4wMjYuNjY3LjA1IDEuMzMyLjA3NiAxLjk5Ny4wMTIgMi45MS4wMDkgNS43MTQtLjAyOSA4LjczM2wtLjIzOSAxMi4xMTZjLS4xNjQgOC4xOTItLjMxOCAxNi43MjktLjU2MiAyNC45NzUtLjA5NyAzLjI2OS0uMTg4IDYuNjI3LS4zNjUgOS45MjgtLjIyOSAzLjI5Ny0uMjkxIDYuOTQtLjQ3IDExLjgyNWMtLjA1OSAxLjU5LS4yNDggMy40NzQtLjU2MSA0Ljk0OS0uMjk1IDEuNDIyLTEuMjY1IDIuNTkxLTIuNDY5IDMuNTQ1LTEuMjM0IDEuMDAxLTIuNjkgMS41NjItNC4yMzkgMS42MDUtNC41NDkuMTIzLTEwLjYxNC0uMTc0LTE2LjA1Ni0uMTk5LTEuODUzLS4wMDctMy43NjUtLjAyMy01Ljc0Mi0uMDc0eiIvPjxwYXRoIGZpbGw9IiNmZmZmZmYiIGQ9Ik01MC42NTUgMzYuOTg1YzkuNzc3IDAgMTcuMTEzIDcuNDgyIDE3LjExMyAxNi42NjggMCA5LjE4My03LjMzNiAxNi42NjgtMTcuMTEzIDE2LjY2OC05Ljc4IDAtMTcuMTE1LTcuNDg1LTE3LjExNS0xNi42NjggMC05LjE4NiA3LjMzNS0xNi42NjggMTcuMTE1LTE2LjY2OHoiLz48cGF0aCBmaWxsPSIjRTQ0MDVGIiBkPSJNNTAuNjU1IDM2Ljk4NWMtOS43OCA2LjczZS0xNi0xNy4xMTUgNy40ODUtMTcuMTE1IDE2LjY2OCAwIDkuMTgzIDcuMzM1IDE2LjY2OCAxNy4xMTUgMTYuNjY4IDkuNzc3IDAgMTcuMTEzLTcuNDg1IDE3LjExMy0xNi42NjggMC05LjE4Ni03LjMzNi0xNi42NjgtMTcuMTEzLTE2LjY2OHptMCAzMC42NTJjLTcuOTYyIDAtMTMuMTU1LTUuMTk0LTEzLjE1NS0xMy45ODQgMC04Ljc5IDUuMTkzLTEzLjk4NCAxMy4xNTUtMTMuOTg0IDcuOTY0IDAgMTMuMTU1IDUuMTk0IDEzLjE1NSAxMy45ODQgMCA4Ljc5LTUuMTkzIDEzLjk4NC0xMy4xNTUgMTMuOTg0eiIvPjxwYXRoIGZpbGw9IiNmZmZmZmYiIGQ9Ik03My41ODUgMjcuMDZjMS40MjIgMCAyLjU4Ni0xLjE2MyAyLjU4Ni0yLjU4NiAwLTEuNDIxLTEuMTY0LTIuNTgzLTIuNTg2LTIuNTgzLTEuNDIyIDAtMi41ODUgMS4xNjItMi41ODUgMi41ODMgMCAxLjQyMiAxLjE2MyAyLjU4NiAyLjU4NSAyLjU4NnoiLz48L3N2Zz4=',
+                'youtube': 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+PHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIHJ4PSIyMCIgcnk9IjIwIiBmaWxsPSIjRkYwMDAwIi8+PHBhdGggZmlsbD0iI2ZmZmZmZiIgZD0iTTM3LjI1NSAzOS45NWM1LjkwMSAzLjQzNCAxMi41NzggNi44NDUgMTguODQ5IDEwLjE1MSA2LjI3IDMuMzAzIDEyLjIzMyA2LjU0MiAxNy40NTMgOS40NTEtMi44ODcgMS41MzgtNS45NzEgMi45MzktOS4wNDcgNC4zODQtMS4yMjkuNTc1LTIuNDU0IDEuMTUtMy42MTggMS43MDgtLjMxMi4xNDctLjYyNy4yOTItLjkyNy40NDgtNS42NzUgMi42OTUtMTEuNjc5IDUuMTE1LTE3LjUzMiA3LjQyNy0zLjM4NyAxLjM1LTkuMTYyIDMuNzU5LTE0LjU2NSAyLjkxNS0uNzAyLS4xMTgtMS43OTEtLjk2MS0yLjQtMi4xMDQtLjE4LS4zNDUtLjI3Ni0uNzA1LS4zNzgtMS4xMjMtMS4xOTUtNC45NTUtMi4xOTYtMTAuMTM0LTMuMjktMTUuNTE4LS40MTctMi4wNTgtLjc0MS00LjI5Mi0xLjAyNC02LjQ4LS41NTYtNC4yNDQtLjg3Ny05LjA4MS0uNzg3LTEzLjgwNi4wMjItMS4wODMuMjMtMi4yMTUuMzY5LTMuMzA2LjIzNy0xLjg0Ny43NDQtMy43MjggMS44MTktNS40MzMuNzM5LTEuMTczIDEuNjQ2LTIuMTU2IDIuNzc1LTIuOTU2IDEuNDY4LTEuMDE4IDIuNzk5LTEuNzYgNC41OTQtMi4zNCAxLjgyNC0uNjE0IDQuMDM5LS44NzUgNi4xNDItLjcwMiA4LjA4Ny42NjkgMTYuMTIyLjY2IDE5LjM1NC4xNjEtLjMyMi0uMDctLjk0NS0uMjM4LTEuNDQtLjQzNS00LjUyOS0xLjgwMS05LjEzNS0zLjcxNC0xMy41MzktNS41Mzh6bTIuNDU3LTEzLjQxMmM0LjY2IDAgOS4yMzQuMDA4IDEzLjgzOC4wMzIgNC45NjkuMDI1IDkuOTM1LjA2MSAxNC45MDQtLjA0MSAxLjU3LS4wMzIgMy4wMjMtLjExMSA0LjU1NC0uMzM1IDIuNzAzLS4zOTcgNS4zMTYtMS4xMTcgNy45NTYtMS42NDcgNS40MDYtMS4wOCA4LjE2NC0yLjI3OCAxMC4xMDYtNi43NzQgMS45NDItNC40OTYgMi4yMTctMTEuMzMzLTEuNzEzLTE1LjI0OS0uMjcxLS4yNzUtLjU5OS0uNTMzLS44NjctLjcxOS0uMjY4LS4xODYtLjQ5Ni0uMzMxLS43MDctLjQ0MS0uODA4LS40MzQtMS44MDgtLjY5Ny0yLjg4OS0uODM4LTEuMDctLjEyOC0yLjE4OC0uMjM4LTMuMjk2LS40NzYtMS4xNjctLjI0NS0yLjY5NS0uNDM5LTQuMDM0LS40ODgtNi4zNzctLjI1Mi0xMi42NjItLjMyNS0xOC44NjQtLjM2OS02LjQwMy0uMDQyLTEyLjk2Mi4xMjctMTkuNDQtLjA4Mi0xLjUzNS0uMDI3LTMuMTQzLS40NTYtNC43OTQtLjU0NC0xLjM3NS0uMDY4LTIuNzUyLS4wNTgtNC4xMjEtLjA5NC0xLjM0MS0uMDM1LTIuNTAxLjA1Mi0zLjU5Mi42NTMtLjkxNS41MDktMS43MjQgMS4yMDYtMi4zNDcgMi4wMTktLjYyMy44MTItMS4wOTggMS44MDMtMS42NjQgMi44OTItMS42NjggMy4yMjctMy4zMjQgNi41MTItNC41NTEgOS44NzktLjg0MSAyLjI5My0xLjU1IDQuOTU0LTEuNzY4IDcuNTQ4LS4yOTQgMy40OTMtLjQyMiA3LjA5NC0uNTE0IDEwLjc3LS4wOTQgMy42OTcuMDAxIDcuNDMxLS4wODQgMTEuMTU0LS4xMDggNC41MjYtLjQxIDkuNTY0LS43NyAxNC4xMzh6Ii8+PC9zdmc+'
+            };
+
+            socialPlatformSelect.addEventListener('change', () => {
+                const selectedPlatform = socialPlatformSelect.value;
+                if (selectedPlatform === 'whatsapp') {
+                    socialLinkInput.classList.add('hidden');
+                    whatsappInputs.classList.remove('hidden');
+                } else {
+                    socialLinkInput.classList.remove('hidden');
+                    whatsappInputs.classList.add('hidden');
+                }
+            });
+
+            generateSocialQrcodeBtn.addEventListener('click', () => {
+                const platform = socialPlatformSelect.value;
+                const fgColor = socialFgColorInput.value;
+                const bgColor = socialBgColorInput.value;
+                let text = '';
+                let logoUrl = '';
+
+                if (platform === 'none') {
+                    showMessage("Please select a social media platform.");
+                    return;
+                }
+
+                if (platform === 'whatsapp') {
+                    const phone = whatsappPhoneInput.value.trim();
+                    const message = whatsappTextInput.value.trim();
+                    if (!phone) {
+                        showMessage("Please enter a phone number for WhatsApp.");
+                        return;
+                    }
+                    text = `https://wa.me/${phone}`;
+                    if (message) {
+                        text += `?text=${encodeURIComponent(message)}`;
+                    }
+                    logoUrl = logos['whatsapp'];
+                } else {
+                    const input = socialQrcodeInput.value.trim();
+                    if (!input) {
+                        showMessage("Please enter the URL or handle for the selected platform.");
+                        return;
+                    }
+                    text = input;
+                    logoUrl = logos[platform];
+                }
+
+                if (!logoUrl) {
+                    showMessage("Logo not found for the selected platform.");
+                    return;
+                }
+
+                socialQrcodeContainer.innerHTML = '';
+                const logo = new Image();
+                logo.crossOrigin = "Anonymous"; // Required for canvas drawing
+                logo.onload = () => {
+                    // Create a temporary element to render the QR code
+                    const tempDiv = document.createElement('div');
+                    new QRCode(tempDiv, {
+                        text: text,
+                        width: 256,
+                        height: 256,
+                        colorDark: fgColor,
+                        colorLight: bgColor,
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+
+                    // Wait for the QR code to be rendered in the temp div
+                    setTimeout(() => {
+                        const qrCanvas = tempDiv.querySelector('canvas');
+                        if (!qrCanvas) {
+                            showMessage("Failed to generate QR code.");
+                            return;
+                        }
+
+                        // Create the final canvas to draw the QR code and the logo
+                        const finalCanvas = document.createElement('canvas');
+                        finalCanvas.width = 256;
+                        finalCanvas.height = 256;
+                        const ctx = finalCanvas.getContext('2d');
+
+                        // Draw the QR code
+                        ctx.drawImage(qrCanvas, 0, 0);
+
+                        // Draw the logo in the center (size is 20% of QR code size)
+                        const logoSize = finalCanvas.width * 0.2;
+                        const logoX = (finalCanvas.width - logoSize) / 2;
+                        const logoY = (finalCanvas.height - logoSize) / 2;
+                        
+                        // Draw a colored background for the logo
+                        ctx.beginPath();
+                        ctx.arc(finalCanvas.width / 2, finalCanvas.height / 2, (logoSize / 2) + 10, 0, 2 * Math.PI);
+                        ctx.fillStyle = bgColor;
+                        ctx.fill();
+
+                        ctx.drawImage(logo, logoX, logoY, logoSize, logoSize);
+                        
+                        socialQrcodeContainer.appendChild(finalCanvas);
+                    }, 50); // Small delay to ensure QR code is rendered
+                };
+                logo.onerror = () => showMessage("Failed to load logo image.");
+                logo.src = logoUrl;
+            });
+            
+            downloadSocialQrcodeBtn.addEventListener('click', () => {
+                const canvas = socialQrcodeContainer.querySelector('canvas');
+                if (!canvas) {
+                    showMessage("Please generate a social media QR code first.");
+                    return;
+                }
+                const link = document.createElement('a');
+                link.download = 'social-qrcode.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+
+            closeMessageBtn.addEventListener('click', hideMessage);
+        });
+    </script>
+</body>
+</html>
