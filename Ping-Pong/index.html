@@ -5,10 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Ping Pong - ToolsNGames</title>
   <meta name="description" content="Play Ping Pong online with CPU. Try ToolsNGames for free games and utility tools.">
-  
-  <!-- Fireworks library -->
-  <script src="https://cdn.jsdelivr.net/npm/fireworks-js@2.1.1/dist/fireworks.min.js"></script>
-
   <style>
     body {
       margin: 0;
@@ -74,16 +70,6 @@
       margin-bottom: 0.5rem;
     }
 
-    #fireworks-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      pointer-events: none;
-      z-index: 999;
-    }
-
     @media (max-width: 600px) {
       .controls {
         flex-direction: column;
@@ -134,10 +120,6 @@
     <button onclick="restartGame()">Restart Game</button>
   </div>
 
-  <!-- Fireworks container -->
-  <div id="fireworks-container"></div>
-  <audio id="fireworkSound" src="https://freesound.org/data/previews/466/466617_960389-lq.mp3" preload="auto"></audio>
-
   <script>
     const canvas = document.getElementById("pongCanvas");
     const ctx = canvas.getContext("2d");
@@ -164,10 +146,6 @@
     const gameMode = document.getElementById("gameMode");
     const ballSpeed = document.getElementById("ballSpeed");
     const winningScoreSelect = document.getElementById("winningScore");
-
-    const fireworkSound = document.getElementById("fireworkSound");
-    const fireworksContainer = document.getElementById("fireworks-container");
-    const fireworks = new Fireworks(fireworksContainer, { acceleration: 1.05, friction: 0.97, gravity: 1.5 });
 
     function drawRect(x, y, w, h, color) {
       ctx.fillStyle = color;
@@ -206,6 +184,7 @@
       if (upPressed && playerY > 0) playerY -= 6;
       if (downPressed && playerY < canvas.height - paddleHeight) playerY += 6;
 
+      const difficulty = parseInt(ballSpeed.value);
       const selectedSpeed = {
         slow: 3,
         medium: 5,
@@ -250,20 +229,7 @@
       const winningScore = parseInt(winningScoreSelect.value);
       if (playerScore >= winningScore || cpuScore >= winningScore) {
         gameRunning = false;
-
-        // Fireworks if Player wins
-        if (playerScore > cpuScore) {
-          fireworks.start();
-          fireworkSound.play();
-
-          setTimeout(() => {
-            fireworks.stop();
-          }, 3000);
-        }
-
-        setTimeout(() => {
-          alert(`${playerScore > cpuScore ? "Player" : "CPU"} wins!`);
-        }, 100);
+        alert(`${playerScore > cpuScore ? "Player" : "CPU"} wins!`);
       }
     }
 
@@ -287,7 +253,6 @@
     }
 
     document.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowUp" || e.key === "ArrowDown") e.preventDefault();
       if (e.key === "ArrowUp") upPressed = true;
       if (e.key === "ArrowDown") downPressed = true;
     });
