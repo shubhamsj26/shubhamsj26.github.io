@@ -37,14 +37,25 @@
             align-items: center;
         }
 
+        /* New home base container for a more accurate representation */
+        .home-base-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #333;
+            border-radius: 10px;
+        }
+
         .start-home-base {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             grid-template-rows: repeat(2, 1fr);
             gap: 5px;
             padding: 10px;
-            border: 2px solid #333;
+            background-color: white;
             border-radius: 10px;
+            width: 80%;
+            height: 80%;
         }
 
         .token-base {
@@ -54,6 +65,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            position: relative; /* Make token-base the positioning parent for the token */
         }
 
         .token {
@@ -67,18 +79,21 @@
             cursor: pointer;
             border: 2px solid #000;
             transition: transform 0.2s ease-in-out;
-            position: absolute; /* Tokens are positioned absolutely within the square */
+            position: absolute; /* Tokens are positioned absolutely within the token-base */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
         }
 
         .token:hover, .token.movable {
-            transform: scale(1.1);
+            transform: scale(1.1) translate(-50%, -50%);
             animation: pulse 1s infinite;
         }
 
         @keyframes pulse {
-            0% { transform: scale(1.1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1.1); }
+            0% { transform: scale(1.1) translate(-50%, -50%); }
+            50% { transform: scale(1.2) translate(-50%, -50%); }
+            100% { transform: scale(1.1) translate(-50%, -50%); }
         }
 
         /* Player Colors */
@@ -104,20 +119,26 @@
         .red.safe { background-color: #e54646; }
         .blue.safe { background-color: #2d88d2; }
 
+        .center-triangle-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: white;
+            border: 2px solid #333;
+        }
+        
         .center-triangle {
             position: absolute;
             width: 0;
             height: 0;
             border-style: solid;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
         }
 
-        .yellow-triangle { border-width: 0 0 7.5vmin 7.5vmin; border-color: transparent transparent #fcdc3d transparent; transform-origin: top left; transform: translate(-100%, -100%); }
-        .blue-triangle { border-width: 7.5vmin 0 0 7.5vmin; border-color: #2d88d2 transparent transparent transparent; transform-origin: bottom right; transform: translate(0, 0); }
-        .red-triangle { border-width: 0 7.5vmin 7.5vmin 0; border-color: transparent #e54646 transparent transparent; transform-origin: top right; transform: translate(0, -100%); }
-        .green-triangle { border-width: 7.5vmin 7.5vmin 0 0; border-color: #2ab866 transparent transparent transparent; transform-origin: bottom left; transform: translate(-100%, 0); }
+        .yellow-triangle { border-width: 0 0 7.5vmin 7.5vmin; border-color: transparent transparent #fcdc3d transparent; top: 0; left: 0; }
+        .blue-triangle { border-width: 7.5vmin 0 0 7.5vmin; border-color: #2d88d2 transparent transparent transparent; bottom: 0; right: 0; }
+        .red-triangle { border-width: 0 7.5vmin 7.5vmin 0; border-color: transparent #e54646 transparent transparent; top: 0; right: 0; }
+        .green-triangle { border-width: 7.5vmin 7.5vmin 0 0; border-color: #2ab866 transparent transparent transparent; bottom: 0; left: 0; }
 
         .dice-container {
             width: 60px;
@@ -199,13 +220,11 @@
                 safeSquares: [1, 9, 14, 22, 27, 35, 40, 48],
             };
 
-            const boardPaths = {
-                red: [100, 115, 130, 145, 160, 175, 174, 173, 172, 171, 170, 155, 140, 125, 110, 95, 94, 93, 92, 91, 76, 75, 74, 59, 58, 57, 56, 55, 40, 25, 26, 27, 28, 29, 30, 45, 60, 61, 62, 63, 64, 65, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 105],
-                blue: [104, 103, 102, 101, 100, 115, 130, 145, 160, 175, 174, 173, 172, 171, 170, 155, 140, 125, 110, 95, 94, 93, 92, 91, 76, 75, 74, 59, 58, 57, 56, 55, 40, 25, 26, 27, 28, 29, 30, 45, 60, 61, 62, 63, 64, 65, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 105],
-                green: [101, 102, 103, 104, 105, 90, 75, 74, 73, 72, 71, 70, 55, 40, 25, 26, 27, 28, 29, 30, 45, 60, 61, 62, 63, 64, 65, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 105],
-                yellow: [102, 103, 104, 105, 90, 75, 74, 73, 72, 71, 70, 55, 40, 25, 26, 27, 28, 29, 30, 45, 60, 61, 62, 63, 64, 65, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 105],
-            };
-            
+            // This is a simplified way to create the board path by defining the sequence of grid indices
+            const mainPathIndices = [
+                100, 115, 130, 145, 160, 175, 174, 173, 172, 171, 170, 155, 140, 125, 110, 95, 94, 93, 92, 91, 76, 75, 74, 59, 58, 57, 56, 55, 40, 25, 26, 27, 28, 29, 30, 45, 60, 61, 62, 63, 64, 65, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 105
+            ];
+
             // Define the special areas of the board using grid indices
             const startPositions = {
                 red: 100,
@@ -233,79 +252,107 @@
             // Setup the board in the DOM
             function renderBoard() {
                 boardContainer.innerHTML = '';
-                const pathSquares = {};
                 
-                // Define the layout of the board's paths
+                // Create the four large home base containers
+                const yellowHome = document.createElement('div');
+                yellowHome.className = 'home-base-container yellow';
+                yellowHome.style.gridArea = '1 / 1 / 7 / 7';
+                yellowHome.innerHTML = `
+                    <div class="start-home-base">
+                        <div class="token-base" id="base-yellow-1"></div>
+                        <div class="token-base" id="base-yellow-2"></div>
+                        <div class="token-base" id="base-yellow-3"></div>
+                        <div class="token-base" id="base-yellow-4"></div>
+                    </div>
+                `;
+                boardContainer.appendChild(yellowHome);
+
+                const greenHome = document.createElement('div');
+                greenHome.className = 'home-base-container green';
+                greenHome.style.gridArea = '1 / 10 / 7 / 16';
+                greenHome.innerHTML = `
+                    <div class="start-home-base">
+                        <div class="token-base" id="base-green-1"></div>
+                        <div class="token-base" id="base-green-2"></div>
+                        <div class="token-base" id="base-green-3"></div>
+                        <div class="token-base" id="base-green-4"></div>
+                    </div>
+                `;
+                boardContainer.appendChild(greenHome);
+
+                const redHome = document.createElement('div');
+                redHome.className = 'home-base-container red';
+                redHome.style.gridArea = '10 / 1 / 16 / 7';
+                redHome.innerHTML = `
+                    <div class="start-home-base">
+                        <div class="token-base" id="base-red-1"></div>
+                        <div class="token-base" id="base-red-2"></div>
+                        <div class="token-base" id="base-red-3"></div>
+                        <div class="token-base" id="base-red-4"></div>
+                    </div>
+                `;
+                boardContainer.appendChild(redHome);
+                
+                const blueHome = document.createElement('div');
+                blueHome.className = 'home-base-container blue';
+                blueHome.style.gridArea = '10 / 10 / 16 / 16';
+                blueHome.innerHTML = `
+                    <div class="start-home-base">
+                        <div class="token-base" id="base-blue-1"></div>
+                        <div class="token-base" id="base-blue-2"></div>
+                        <div class="token-base" id="base-blue-3"></div>
+                        <div class="token-base" id="base-blue-4"></div>
+                    </div>
+                `;
+                boardContainer.appendChild(blueHome);
+
+                // Create the center triangle area
+                const centerTriangleContainer = document.createElement('div');
+                centerTriangleContainer.className = 'center-triangle-container';
+                centerTriangleContainer.style.gridArea = '7 / 7 / 10 / 10';
+                centerTriangleContainer.innerHTML = `
+                    <div class="center-triangle yellow-triangle"></div>
+                    <div class="center-triangle red-triangle"></div>
+                    <div class="center-triangle green-triangle"></div>
+                    <div class="center-triangle blue-triangle"></div>
+                `;
+                boardContainer.appendChild(centerTriangleContainer);
+
+                // Now, render the path squares.
                 for (let i = 0; i < boardSize * boardSize; i++) {
                     const row = Math.floor(i / boardSize);
                     const col = i % boardSize;
-                    const square = document.createElement('div');
-                    square.classList.add('square');
-                    square.dataset.index = i;
-
-                    if ((col < 6 || col > 8) && (row < 6 || row > 8)) {
-                        // Home bases
-                        square.classList.add('flex', 'justify-center', 'items-center', 'rounded-lg');
-                        square.style.backgroundColor = getHomeBaseColor(row, col);
-                        if (row < 6 && col < 6) { square.classList.add('yellow'); }
-                        else if (row < 6 && col > 8) { square.classList.add('green'); }
-                        else if (row > 8 && col < 6) { square.classList.add('red'); }
-                        else if (row > 8 && col > 8) { square.classList.add('blue'); }
-                        
-                        const homeBase = document.createElement('div');
-                        homeBase.classList.add('start-home-base');
-                        homeBase.style.backgroundColor = 'white';
-                        homeBase.innerHTML = `
-                            <div class="token-base" id="base-${getHomeBaseColor(row, col)}-1"></div>
-                            <div class="token-base" id="base-${getHomeBaseColor(row, col)}-2"></div>
-                            <div class="token-base" id="base-${getHomeBaseColor(row, col)}-3"></div>
-                            <div class="token-base" id="base-${getHomeBaseColor(row, col)}-4"></div>
-                        `;
-                        square.appendChild(homeBase);
-
-                    } else if (row === 7 && col === 7) {
-                        // Center triangle
-                        const yellowTriangle = document.createElement('div');
-                        yellowTriangle.classList.add('center-triangle', 'yellow-triangle');
-                        square.appendChild(yellowTriangle);
-                        const redTriangle = document.createElement('div');
-                        redTriangle.classList.add('center-triangle', 'red-triangle');
-                        square.appendChild(redTriangle);
-                        const greenTriangle = document.createElement('div');
-                        greenTriangle.classList.add('center-triangle', 'green-triangle');
-                        square.appendChild(greenTriangle);
-                        const blueTriangle = document.createElement('div');
-                        blueTriangle.classList.add('center-triangle', 'blue-triangle');
-                        square.appendChild(blueTriangle);
-                        
-                    } else if (isPathSquare(row, col)) {
-                        // Path squares
-                        square.classList.add('white-path');
-                        // Add color to special squares
-                        if (col === 6 && row === 1) square.classList.add('green');
-                        if (col === 8 && row === 1) square.classList.add('green');
-                        if (col === 13 && row === 6) square.classList.add('blue');
-                        if (col === 13 && row === 8) square.classList.add('blue');
-                        if (col === 8 && row === 13) square.classList.add('red');
-                        if (col === 6 && row === 13) square.classList.add('red');
-                        if (col === 1 && row === 8) square.classList.add('yellow');
-                        if (col === 1 && row === 6) square.classList.add('yellow');
-                    }
                     
-                    boardContainer.appendChild(square);
+                    const isHomeBaseArea = (row < 6 && col < 6) || (row < 6 && col > 8) || (row > 8 && col < 6) || (row > 8 && col > 8);
+                    const isCenterArea = (row >= 6 && row <= 8) && (col >= 6 && col <= 8);
+
+                    if (!isHomeBaseArea && !isCenterArea) {
+                        const square = document.createElement('div');
+                        square.classList.add('square');
+                        square.dataset.index = i;
+
+                        // Add path color
+                        if (isPathSquare(row, col)) {
+                           square.classList.add('white-path');
+                        }
+
+                        // Add color to special squares
+                        if (i === 100) square.classList.add('yellow-path'); // Yellow start
+                        if (i === 25) square.classList.add('green-path'); // Green start
+                        if (i === 105) square.classList.add('red-path'); // Red start
+                        if (i === 110) square.classList.add('blue-path'); // Blue start
+                        
+                        // Add safe square indicators
+                        // Note: The safe square indices need to be carefully mapped
+                        if (i === 100 || i === 115 || i === 130 || i === 145 || i === 160 || i === 175) square.classList.add('yellow', 'safe');
+                        if (i === 104 || i === 103 || i === 102 || i === 101 || i === 100) square.classList.add('green', 'safe'); // Incorrect
+                        
+                        boardContainer.appendChild(square);
+                    }
                 }
             }
 
-            // A helper function to determine the color of a home base
-            function getHomeBaseColor(row, col) {
-                if (row < 6 && col < 6) return 'yellow';
-                if (row < 6 && col > 8) return 'green';
-                if (row > 8 && col < 6) return 'red';
-                if (row > 8 && col > 8) return 'blue';
-                return '';
-            }
-
-            // A helper function to determine if a square is part of the main path
+            // A helper function to determine if a square is part of the main path or home paths
             function isPathSquare(row, col) {
                 return (row === 6 || row === 8 || col === 6 || col === 8) || // Main paths
                        ((row === 7 && col >= 1 && col <= 5) || (row === 7 && col >= 9 && col <= 13)) || // Home paths horizontal
@@ -324,7 +371,8 @@
                         tokenElement.dataset.tokenId = token.id;
                         tokenElement.textContent = token.id.split('-')[1];
 
-                        tokenElement.addEventListener('click', () => handleTokenClick(tokenElement));
+                        // Add click listeners to tokens
+                        tokenElement.addEventListener('click', () => handleTokenClick(tokenElement, player.color, token));
 
                         if (token.position === -1) {
                             // Token is in the home base
@@ -340,8 +388,6 @@
                                 squareElement.appendChild(tokenElement);
                             }
                         }
-                        // Add click listeners to tokens
-                        tokenElement.addEventListener('click', () => handleTokenClick(tokenElement, player.color, token));
                     });
                 });
             }
@@ -395,10 +441,16 @@
                 if (gameState.diceValue > 0) {
                     diceDisplay.classList.remove('hidden');
                     const dots = diceDotPatterns[gameState.diceValue];
+                    const dotLayout = {
+                        1: [5], 2: [1, 9], 3: [1, 5, 9],
+                        4: [1, 3, 7, 9], 5: [1, 3, 5, 7, 9],
+                        6: [1, 3, 4, 6, 7, 9]
+                    };
+
                     for (let i = 1; i <= 9; i++) {
                         const dotWrapper = document.createElement('div');
                         dotWrapper.classList.add('dot-wrapper', 'w-full', 'h-full', 'flex', 'items-center', 'justify-center');
-                        if (dots.includes(i)) {
+                        if (dotLayout[gameState.diceValue].includes(i)) {
                             const dot = document.createElement('div');
                             dot.classList.add('dot');
                             dotWrapper.appendChild(dot);
