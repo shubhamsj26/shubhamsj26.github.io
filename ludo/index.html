@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ludo Game</title>
-    <!-- Tailwind CSS CDN -->
+    <!-- Tailwind CSS for utility classes and responsive design -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Inter Font -->
+    <!-- Inter font for clean typography -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap">
     <style>
+        /* Custom CSS for the Ludo board layout and game elements */
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f0f4f8;
@@ -18,7 +19,7 @@
             display: grid;
             grid-template-columns: repeat(15, 1fr);
             grid-template-rows: repeat(15, 1fr);
-            width: 80vmin; /* Responsive sizing */
+            width: 80vmin; /* Use vmin for responsive sizing on all devices */
             height: 80vmin;
             max-width: 600px;
             max-height: 600px;
@@ -37,7 +38,7 @@
             align-items: center;
         }
 
-        /* New home base container for a more accurate representation */
+        /* Styling for the large home bases where tokens start */
         .home-base-container {
             display: flex;
             justify-content: center;
@@ -65,9 +66,10 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            position: relative; /* Make token-base the positioning parent for the token */
+            position: relative;
         }
 
+        /* Token styling */
         .token {
             width: 80%;
             height: 80%;
@@ -79,7 +81,7 @@
             cursor: pointer;
             border: 2px solid #000;
             transition: transform 0.2s ease-in-out;
-            position: absolute; /* Tokens are positioned absolutely within the token-base */
+            position: absolute;
             left: 50%;
             top: 50%;
             transform: translate(-50%, -50%);
@@ -96,20 +98,20 @@
             100% { transform: scale(1.1) translate(-50%, -50%); }
         }
 
-        /* Player Colors */
+        /* Player Colors for tokens and home bases */
         .yellow { background-color: #fcdc3d; }
         .green { background-color: #2ab866; }
         .red { background-color: #e54646; }
         .blue { background-color: #2d88d2; }
 
-        /* Board path colors */
+        /* Board path colors for the home stretch */
         .yellow-path { background-color: #ffef96; }
         .green-path { background-color: #8fe5b4; }
         .red-path { background-color: #f7a9a9; }
         .blue-path { background-color: #8cb8e7; }
         .white-path { background-color: #fff; }
 
-        /* Safe Squares */
+        /* Safe Squares visual design */
         .safe {
             position: relative;
             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><g><path d="M 0 0 L 100 50 L 0 100 L 0 0" fill="rgba(0,0,0,0.15)"/><path d="M 100 0 L 0 50 L 100 100 L 100 0" fill="rgba(0,0,0,0.15)"/></g></svg>');
@@ -119,6 +121,7 @@
         .red.safe { background-color: #e54646; }
         .blue.safe { background-color: #2d88d2; }
 
+        /* Center triangle styling for the finish area */
         .center-triangle-container {
             position: relative;
             display: flex;
@@ -140,6 +143,7 @@
         .red-triangle { border-width: 0 7.5vmin 7.5vmin 0; border-color: transparent #e54646 transparent transparent; top: 0; right: 0; }
         .green-triangle { border-width: 7.5vmin 7.5vmin 0 0; border-color: #2ab866 transparent transparent transparent; bottom: 0; left: 0; }
 
+        /* Dice display container */
         .dice-container {
             width: 60px;
             height: 60px;
@@ -151,8 +155,15 @@
             grid-template-rows: repeat(3, 1fr);
             padding: 5px;
             box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+            animation: bounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.27) both;
         }
 
+        @keyframes bounce {
+            0% { transform: scale(0.5); }
+            100% { transform: scale(1); }
+        }
+
+        /* Dice dot styling */
         .dot {
             width: 10px;
             height: 10px;
@@ -160,13 +171,6 @@
             border-radius: 50%;
             place-self: center;
         }
-
-        .dice-1 { grid-column: 2; grid-row: 2; }
-        .dice-2 { grid-column: 1; grid-row: 1; }
-        .dice-3 { grid-column: 3; grid-row: 3; }
-        .dice-4 { grid-column: 1; grid-row: 1; }
-        .dice-5 { grid-column: 3; grid-row: 3; }
-        .dice-6 { grid-column: 1; grid-row: 2; }
     </style>
 </head>
 <body class="bg-gray-100 flex flex-col items-center justify-center min-h-screen p-4">
@@ -202,34 +206,33 @@
                 players: playerColors.map(color => ({
                     color: color,
                     tokens: [
-                        { id: `${color}-1`, position: -1, isHome: false, isWinner: false },
-                        { id: `${color}-2`, position: -1, isHome: false, isWinner: false },
-                        { id: `${color}-3`, position: -1, isHome: false, isWinner: false },
-                        { id: `${color}-4`, position: -1, isHome: false, isWinner: false }
+                        { id: `${color}-1`, position: -1, isHome: true, isWinner: false },
+                        { id: `${color}-2`, position: -1, isHome: true, isWinner: false },
+                        { id: `${color}-3`, position: -1, isHome: true, isWinner: false },
+                        { id: `${color}-4`, position: -1, isHome: true, isWinner: false }
                     ],
-                    startSquareIndex: 0,
-                    homePathStartIndex: 0,
-                    tokensInHome: 0,
-                    consecutiveSixes: 0 // Track consecutive sixes for the new rule
+                    startSquareInPathIndex: 0,
+                    tokensInHome: 4,
+                    consecutiveSixes: 0,
+                    canRollAgain: false
                 })),
                 currentPlayerIndex: 0,
                 diceValue: 0,
-                movableTokens: [],
                 turnPhase: 'roll', // 'roll' or 'move'
                 
                 // This is a single, continuous path for all players.
-                // Each player will start at a different point on this path.
-                mainPath: [100, 115, 130, 145, 160, 175, 174, 173, 172, 171, 170, 155, 140, 125, 110, 95, 94, 93, 92, 91, 76, 75, 74, 59, 58, 57, 56, 55, 40, 25, 26, 27, 28, 29, 30, 45, 60, 61, 62, 63, 64, 65, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 105],
+                // The values are the grid indices.
+                mainPath: [99, 98, 97, 96, 95, 80, 65, 50, 35, 20, 21, 22, 23, 24, 25, 40, 55, 70, 85, 100, 101, 102, 103, 104, 119, 134, 149, 164, 179, 178, 177, 176, 175, 160, 145, 130, 115, 100, 99, 98, 97, 96, 95, 80, 65, 50, 35, 20, 21, 22, 23, 24, 25, 40],
                 
                 // Home paths for each player
                 homePaths: {
-                    red: [106, 107, 108, 109, 110, 111],
-                    blue: [89, 88, 87, 86, 85, 84],
-                    green: [80, 81, 82, 83, 84, 85],
-                    yellow: [92, 93, 94, 95, 96, 97],
+                    red: [112, 113, 114, 115, 116, 117, 118, 119],
+                    blue: [13, 28, 43, 58, 73, 88],
+                    green: [106, 107, 108, 109, 110, 111],
+                    yellow: [80, 81, 82, 83, 84, 85],
                 },
 
-                // Player-specific start and home path mappings
+                // Player-specific start indices in the mainPath array
                 playerStartIndices: {
                     red: 0,
                     blue: 13,
@@ -238,21 +241,14 @@
                 },
 
                 // Safe squares, defined by their grid indices, based on standard Ludo rules
-                safeSquares: [100, 104, 105, 101, 172, 145, 28, 60],
-            };
-
-            const diceDotPatterns = {
-                1: [5],
-                2: [1, 9],
-                3: [1, 5, 9],
-                4: [1, 3, 7, 9],
-                5: [1, 3, 5, 7, 9],
-                6: [1, 3, 4, 6, 7, 9],
+                safeSquares: [99, 84, 69, 54, 39, 24, 25, 40, 55, 70, 85, 100, 115, 130, 145, 160, 175, 176, 161, 146, 131, 116, 101, 98, 97, 96, 95, 80, 65, 50, 35, 20, 19, 34, 49, 64, 79, 94],
             };
             
             // Map the player color to the corresponding home path and start index
             gameState.players.forEach(player => {
-                player.startSquareIndex = gameState.playerStartIndices[player.color];
+                const startIndex = gameState.playerStartIndices[player.color];
+                player.startSquareGridIndex = gameState.mainPath[startIndex]; // Store the actual grid index
+                player.startSquareInPathIndex = startIndex; // Store the index within the mainPath array
             });
 
             // Setup the board in the DOM
@@ -348,9 +344,20 @@
                         if (i >= 80 && i <= 85) square.classList.add('green-path'); // Green home path
                         if (i >= 92 && i <= 97) square.classList.add('yellow-path'); // Yellow home path
 
-                        // Add safe square indicators
+                        // Add safe square indicators (star symbol)
                         if (gameState.safeSquares.includes(i)) {
-                            square.classList.add('safe');
+                            square.innerHTML = '<span class="text-3xl">⭐</span>';
+                        }
+                        
+                        // Add safe square class for styling
+                        if (isPathSquare(row, col) && (row === 6 || row === 8 || col === 6 || col === 8) ) {
+                            const isStartingSquare = (i === gameState.players[0].startSquareGridIndex) ||
+                                                    (i === gameState.players[1].startSquareGridIndex) ||
+                                                    (i === gameState.players[2].startSquareGridIndex) ||
+                                                    (i === gameState.players[3].startSquareGridIndex);
+                            if (isStartingSquare) {
+                                square.classList.add('safe');
+                            }
                         }
 
                         boardContainer.appendChild(square);
@@ -358,11 +365,10 @@
                 }
             }
 
-            // A helper function to determine if a square is part of the main path or home paths
             function isPathSquare(row, col) {
-                return (row === 6 || row === 8 || col === 6 || col === 8) || // Main paths
-                       ((row === 7 && col >= 1 && col <= 5) || (row === 7 && col >= 9 && col <= 13)) || // Home paths horizontal
-                       ((col === 7 && row >= 1 && row <= 5) || (col === 7 && row >= 9 && row <= 13)); // Home paths vertical
+                return (row === 6 || row === 8 || col === 6 || col === 8) ||
+                       ((row === 7 && col >= 1 && col <= 5) || (row === 7 && col >= 9 && col <= 13)) ||
+                       ((col === 7 && row >= 1 && row <= 5) || (col === 7 && row >= 9 && row <= 13));
             }
             
             function renderTokens() {
@@ -373,23 +379,21 @@
                     player.tokens.forEach(token => {
                         const tokenElement = document.createElement('div');
                         tokenElement.classList.add('token', player.color, 'shadow-md');
-                        tokenElement.id = token.id; // Set ID for easier access
+                        tokenElement.id = token.id;
                         tokenElement.dataset.playerId = player.color;
                         tokenElement.dataset.tokenId = token.id;
                         tokenElement.textContent = token.id.split('-')[1];
 
-                        // Add click listeners to tokens
                         tokenElement.addEventListener('click', () => handleTokenClick(token));
 
-                        if (token.position === -1) {
-                            // Token is in the home base
+                        if (token.isHome) {
                             const baseElement = document.getElementById(`base-${player.color}-${token.id.split('-')[1]}`);
                             if (baseElement) {
                                 baseElement.appendChild(tokenElement);
                             }
+                        } else if (token.isWinner) {
+                            // Do nothing, token is in the home triangle
                         } else {
-                            // Token is on the path
-                            // The token's position is an index in the player's unique path
                             const playerPath = getPlayerPath(player.color);
                             const squareGridIndex = playerPath[token.position];
                             const squareElement = boardContainer.querySelector(`[data-index="${squareGridIndex}"]`);
@@ -401,35 +405,41 @@
                 });
             }
 
-            // A helper function to create a player's full path (main path + home path)
             function getPlayerPath(color) {
                 const mainPath = gameState.mainPath;
                 const homePath = gameState.homePaths[color];
                 const playerStartIndex = gameState.playerStartIndices[color];
                 
-                const rotatedPath = [...mainPath.slice(playerStartIndex), ...mainPath.slice(0, playerStartIndex)];
-                return [...rotatedPath, ...homePath];
+                const rotatedMainPath = [...mainPath.slice(playerStartIndex), ...mainPath.slice(0, playerStartIndex)];
+                return [...rotatedMainPath, ...homePath];
             }
 
             function updateUI() {
                 renderTokens();
-                // Highlight current player's tokens
                 const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+                
+                // Reset movable state for all tokens
                 document.querySelectorAll(`.token`).forEach(token => {
                     token.classList.remove('movable', 'border-4', 'border-white');
+                    token.style.cursor = 'default';
                 });
                 
-                // Show which tokens can be moved
+                // Highlight current player's tokens if they can be moved
                 if (gameState.turnPhase === 'move') {
-                    gameState.movableTokens.forEach(token => {
+                    const movableTokens = getMovableTokens(currentPlayer);
+                    movableTokens.forEach(token => {
                         const tokenElement = document.getElementById(token.id);
                         if (tokenElement) {
                             tokenElement.classList.add('movable', 'border-4', 'border-white');
+                            tokenElement.style.cursor = 'pointer';
                         }
                     });
                 }
                 
                 statusMessage.textContent = `It's ${currentPlayer.color.toUpperCase()}'s turn.`;
+                if (gameState.diceValue > 0) {
+                    statusMessage.textContent += ` You rolled a ${gameState.diceValue}.`;
+                }
 
                 // Update dice display
                 diceDisplay.innerHTML = '';
@@ -452,11 +462,21 @@
                     }
                 }
                 
-                // Disable/Enable the roll button
+                // Disable/Enable the roll button based on the turn phase
                 rollDiceBtn.disabled = gameState.turnPhase === 'move';
                 rollDiceBtn.classList.toggle('bg-gray-400', rollDiceBtn.disabled);
                 rollDiceBtn.classList.toggle('hover:bg-indigo-700', !rollDiceBtn.disabled);
                 rollDiceBtn.classList.toggle('cursor-not-allowed', rollDiceBtn.disabled);
+            }
+
+            function getMovableTokens(player) {
+                if (gameState.diceValue === 6) {
+                    // With a 6, any token can be moved, including those in home
+                    return player.tokens.filter(token => !token.isWinner);
+                } else {
+                    // With a non-6, only tokens already on the board can move
+                    return player.tokens.filter(token => !token.isHome && !token.isWinner);
+                }
             }
 
             function rollDice() {
@@ -471,37 +491,24 @@
                     if (currentPlayer.consecutiveSixes >= 3) {
                         statusMessage.textContent = `${currentPlayer.color.toUpperCase()} rolled three sixes in a row! Turn ends.`;
                         currentPlayer.consecutiveSixes = 0;
-                        setTimeout(switchPlayer, 1500);
+                        gameState.canRollAgain = false;
+                        setTimeout(switchPlayer, 2000);
                         return;
                     }
+                    currentPlayer.canRollAgain = true;
                 } else {
                     currentPlayer.consecutiveSixes = 0;
+                    currentPlayer.canRollAgain = false;
                 }
                 
                 gameState.turnPhase = 'move';
-                statusMessage.textContent = `${currentPlayer.color.toUpperCase()} rolled a ${diceRoll}.`;
-
-                checkValidMoves();
-                updateUI();
-            }
-
-            function checkValidMoves() {
-                const currentPlayer = gameState.players[gameState.currentPlayerIndex];
-                gameState.movableTokens = [];
-
-                // A token can be moved out of home only if a 6 is rolled and there is a token in home
-                const hasTokensInHome = currentPlayer.tokens.some(token => token.position === -1);
-                if (gameState.diceValue === 6 && hasTokensInHome) {
-                    // If a 6 is rolled, any token can be moved, including those in home
-                    gameState.movableTokens = currentPlayer.tokens.filter(token => !token.isWinner);
+                
+                const movableTokens = getMovableTokens(currentPlayer);
+                if (movableTokens.length === 0) {
+                    statusMessage.textContent = `${currentPlayer.color.toUpperCase()} rolled a ${diceRoll}. No moves possible. Switching turn.`;
+                    setTimeout(switchPlayer, 2000);
                 } else {
-                    // Otherwise, only tokens already on the board can move
-                    gameState.movableTokens = currentPlayer.tokens.filter(token => token.position !== -1 && !token.isWinner);
-                }
-
-                if (gameState.movableTokens.length === 0) {
-                    statusMessage.textContent += " No moves possible. Switching turn.";
-                    setTimeout(switchPlayer, 1500);
+                    updateUI();
                 }
             }
             
@@ -514,50 +521,67 @@
                     return;
                 }
                 
-                const isMovable = gameState.movableTokens.some(t => t.id === token.id);
-
+                const movableTokens = getMovableTokens(currentPlayer);
+                const isMovable = movableTokens.some(t => t.id === token.id);
+                
                 if (isMovable) {
-                    if (token.position === -1 && gameState.diceValue === 6) {
-                        // Move token out of home base
-                        token.position = currentPlayer.startSquareIndex;
+                    let moveSuccessful = false;
+
+                    // Case 1: Move a token out of the home base
+                    if (token.isHome && gameState.diceValue === 6) {
+                        token.isHome = false;
+                        token.position = 0; // Position is the index in the player's path
+                        currentPlayer.tokensInHome--;
+                        moveSuccessful = true;
                         statusMessage.textContent = `${currentPlayer.color.toUpperCase()} moved a token out of home base!`;
-                        endMove();
-                    } else if (token.position !== -1) {
-                        // Move a token already on the board
+                    } 
+                    // Case 2: Move a token already on the board
+                    else if (!token.isHome && !token.isWinner) {
                         const playerPath = getPlayerPath(currentPlayer.color);
                         const newPositionIndex = token.position + gameState.diceValue;
-                        
-                        // Check if the move is valid (not overshooting the home path)
+
+                        // Check for overshooting the home path
                         if (newPositionIndex >= playerPath.length) {
                              statusMessage.textContent = "Cannot move, you overshot the final square!";
                              return;
                         }
-
+                        
                         // Check for capturing an opponent's token
                         const newGridIndex = playerPath[newPositionIndex];
                         const tokenToKill = findTokenAtPosition(newGridIndex);
                         
+                        let didCapture = false;
                         if (tokenToKill && tokenToKill.player.color !== currentPlayer.color) {
                             // Check if the square is a safe square
                             const isSafe = gameState.safeSquares.includes(newGridIndex);
                             if (!isSafe) {
                                 // Kill the token
                                 tokenToKill.token.position = -1;
+                                tokenToKill.token.isHome = true;
+                                tokenToKill.player.tokensInHome++;
+                                didCapture = true;
                                 statusMessage.textContent = `${currentPlayer.color.toUpperCase()} killed a ${tokenToKill.player.color.toUpperCase()} token!`;
                             }
                         }
 
-                        // Move the token
                         token.position = newPositionIndex;
+                        moveSuccessful = true;
 
+                        // A capture or rolling a 6 grants another turn.
+                        if (didCapture) {
+                            currentPlayer.canRollAgain = true;
+                            statusMessage.textContent += " You captured a token! Roll again!";
+                        }
+                        
                         // Check for win condition
                         if (newPositionIndex === playerPath.length - 1) {
                             token.isWinner = true;
-                            currentPlayer.tokensInHome++;
                             statusMessage.textContent = `${currentPlayer.color.toUpperCase()}'s token reached the end!`;
                             checkWinCondition(currentPlayer);
                         }
-                        
+                    }
+
+                    if (moveSuccessful) {
                         endMove();
                     }
                 } else {
@@ -566,15 +590,17 @@
             }
 
             function endMove() {
+                const currentPlayer = gameState.players[gameState.currentPlayerIndex];
                 gameState.turnPhase = 'roll';
-                // A dice roll of 6 gets another turn
-                if (gameState.diceValue === 6) {
+                gameState.diceValue = 0;
+                
+                if (currentPlayer.canRollAgain) {
                     setTimeout(() => {
-                        statusMessage.textContent = `${gameState.players[gameState.currentPlayerIndex].color.toUpperCase()} gets to roll again.`;
+                        statusMessage.textContent = `${currentPlayer.color.toUpperCase()} gets to roll again.`;
                         updateUI();
-                    }, 1500);
+                    }, 1000);
                 } else {
-                    setTimeout(switchPlayer, 1500);
+                    setTimeout(switchPlayer, 1000);
                 }
                 updateUI();
             }
@@ -582,12 +608,12 @@
             function findTokenAtPosition(gridIndex) {
                 for (const player of gameState.players) {
                     for (const token of player.tokens) {
-                        const playerPath = getPlayerPath(player.color);
-                        if (token.position !== -1) {
-                             const tokenGridIndex = playerPath[token.position];
-                             if (tokenGridIndex === gridIndex) {
+                        if (!token.isHome && !token.isWinner) {
+                            const playerPath = getPlayerPath(player.color);
+                            const tokenGridIndex = playerPath[token.position];
+                            if (tokenGridIndex === gridIndex) {
                                 return { player, token };
-                             }
+                            }
                         }
                     }
                 }
@@ -598,11 +624,13 @@
                 gameState.currentPlayerIndex = (gameState.currentPlayerIndex + 1) % gameState.players.length;
                 gameState.diceValue = 0;
                 gameState.turnPhase = 'roll';
+                gameState.players[gameState.currentPlayerIndex].canRollAgain = false;
                 updateUI();
             }
 
             function checkWinCondition(player) {
-                if (player.tokensInHome === 4) {
+                const finishedTokens = player.tokens.filter(t => t.isWinner).length;
+                if (finishedTokens === 4) {
                     statusMessage.textContent = `Game Over! ${player.color.toUpperCase()} wins!`;
                     rollDiceBtn.disabled = true;
                 }
@@ -610,7 +638,6 @@
 
             rollDiceBtn.addEventListener('click', rollDice);
 
-            // Initial setup
             renderBoard();
             renderTokens();
             updateUI();
