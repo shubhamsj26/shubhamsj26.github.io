@@ -1,51 +1,69 @@
-const board = document.getElementById("board");
+let currentPlayer = "Red";
+let diceValue = 0;
+let redPosition = 0;
+let bluePosition = 0;
+
+const rollDiceBtn = document.getElementById("rollDiceBtn");
+const diceValueSpan = document.getElementById("diceValue");
+const currentPlayerSpan = document.getElementById("currentPlayer");
 const diceEl = document.getElementById("dice");
-const turnEl = document.getElementById("turn");
-const rollBtn = document.getElementById("rollBtn");
 
-let cells = [];
-let positions = [0, 0]; // Index 0 = Player 1, Index 1 = Player 2
-let currentPlayer = 0;
+rollDiceBtn.addEventListener("click", () => {
+  diceEl.classList.add("rolling");
+  setTimeout(() => {
+    diceValue = Math.floor(Math.random() * 6) + 1;
+    diceValueSpan.textContent = diceValue;
+    diceEl.textContent = getDiceFace(diceValue);
 
-// Create 15x15 board (225 cells)
-for (let i = 0; i < 225; i++) {
-  const div = document.createElement("div");
-  div.classList.add("cell");
-  board.appendChild(div);
-  cells.push(div);
+    moveToken(currentPlayer, diceValue);
+
+    currentPlayer = currentPlayer === "Red" ? "Blue" : "Red";
+    currentPlayerSpan.textContent = currentPlayer;
+
+    diceEl.classList.remove("rolling");
+  }, 300);
+});
+
+function getDiceFace(value) {
+  const diceFaces = ["", "⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
+  return diceFaces[value];
 }
 
-function updateBoard() {
-  cells.forEach(cell => {
-    cell.className = "cell";
-    cell.textContent = "";
-  });
+function moveToken(player, value) {
+  let pos, newPos;
 
-  if (positions[0] < 225) {
-    cells[positions[0]].classList.add("player1");
-    cells[positions[0]].textContent = "1";
+  if (player === "Red") {
+    pos = redPosition;
+    newPos = Math.min(pos + value, 3);
+    redPosition = newPos;
+  } else {
+    pos = bluePosition;
+    newPos = Math.min(pos + value, 6);
+    bluePosition = newPos;
   }
-  if (positions[1] < 225) {
-    cells[positions[1]].classList.add("player2");
-    cells[positions[1]].textContent = "2";
+
+  resetBoard();
+
+  if (player === "Red" && redPosition < 4) {
+    document.getElementById("cell" + (redPosition + 1)).textContent = "🔴";
+  } else if (player === "Red") {
+    document.getElementById("finish-red").textContent = "🔴🏁";
+    alert("Red wins!");
+    rollDiceBtn.disabled = true;
+  }
+
+  if (player === "Blue" && bluePosition > 3 && bluePosition < 7) {
+    document.getElementById("cell" + (bluePosition + 1)).textContent = "🔵";
+  } else if (player === "Blue" && bluePosition >= 6) {
+    document.getElementById("finish-blue").textContent = "🔵🏁";
+    alert("Blue wins!");
+    rollDiceBtn.disabled = true;
   }
 }
 
-function rollDice() {
-  const roll = Math.floor(Math.random() * 6) + 1;
-  diceEl.textContent = roll;
-
-  positions[currentPlayer] += roll;
-
-  if (positions[currentPlayer] >= 224) {
-    alert(`Player ${currentPlayer + 1} wins! 🎉`);
-    positions = [0, 0];
+function resetBoard() {
+  for (let i = 1; i <= 6; i++) {
+    const cell = document.getElementById("cell" + i);
+    if (cell) cell.textContent = "";
   }
-
-  updateBoard();
-  currentPlayer = currentPlayer === 0 ? 1 : 0;
-  turnEl.textContent = `Player ${currentPlayer + 1}`;
 }
-
-rollBtn.addEventListener("click", rollDice);
-updateBoard();
