@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Ludo Game</title>
   <style>
     body {
@@ -11,15 +11,17 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       background-color: #f2f2f2;
+      min-height: 100vh;
     }
 
     #game-container {
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin-top: 20px;
+      margin-top: 10px;
+      width: 100%;
     }
 
     #board {
@@ -28,12 +30,14 @@
       grid-template-rows: repeat(15, 30px);
       gap: 1px;
       background-color: #000;
+      touch-action: manipulation;
     }
 
     .cell {
       width: 30px;
       height: 30px;
       background-color: #fff;
+      position: relative;
     }
 
     .home-red, .home-blue, .home-green, .home-yellow {
@@ -44,13 +48,14 @@
       width: 20px;
       height: 20px;
       border-radius: 50%;
-      margin: auto;
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      cursor: pointer;
     }
 
     .token-red { background-color: red; }
     .token-blue { background-color: blue; }
-    .token-green { background-color: green; }
-    .token-yellow { background-color: yellow; }
 
     #dice-container {
       margin-top: 20px;
@@ -59,19 +64,18 @@
 
     #dice {
       font-size: 50px;
-      animation: spin 0.5s ease-in-out;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      margin-bottom: 10px;
     }
 
     #roll-button {
       padding: 10px 20px;
       font-size: 16px;
-      margin-top: 10px;
       cursor: pointer;
+    }
+
+    #turn-display {
+      margin-top: 10px;
+      font-weight: bold;
     }
 
     @media (max-width: 600px) {
@@ -83,6 +87,12 @@
         width: 20px;
         height: 20px;
       }
+      .token {
+        width: 14px;
+        height: 14px;
+        top: 3px;
+        left: 3px;
+      }
     }
   </style>
 </head>
@@ -92,6 +102,7 @@
     <div id="dice-container">
       <div id="dice">🎲</div>
       <button id="roll-button">Roll Dice</button>
+      <div id="turn-display">Current Turn: Red</div>
     </div>
   </div>
 
@@ -99,11 +110,11 @@
     const board = document.getElementById("board");
     const dice = document.getElementById("dice");
     const rollBtn = document.getElementById("roll-button");
+    const turnDisplay = document.getElementById("turn-display");
 
     const boardSize = 15;
     let cells = [];
 
-    // Generate the board
     for (let i = 0; i < boardSize * boardSize; i++) {
       const cell = document.createElement("div");
       cell.classList.add("cell");
@@ -111,11 +122,8 @@
       cells.push(cell);
     }
 
-    // Define home zones
     const homeIndices = {
       red: [0, 1, 2, 15, 16, 17, 30, 31, 32],
-      green: [12, 13, 14, 27, 28, 29, 42, 43, 44],
-      yellow: [180, 181, 182, 195, 196, 197, 210, 211, 212],
       blue: [192, 193, 194, 207, 208, 209, 222, 223, 224]
     };
 
@@ -125,17 +133,29 @@
       });
     }
 
-    // Add 4 tokens per player in homes
-    function createToken(color) {
+    const pathRed = [97, 96, 95, 94, 93, 92, 91, 90, 75, 60, 45, 30, 15, 0, 1, 2, 3, 4, 5, 6];
+    const pathBlue = [117, 118, 119, 120, 121, 122, 123, 124, 109, 94, 79, 64, 49, 34, 19, 4, 5, 6, 7, 8];
+
+    const playerTokens = {
+      red: [],
+      blue: []
+    };
+
+    function createToken(color, id) {
       const token = document.createElement("div");
       token.classList.add("token", `token-${color}`);
+      token.dataset.color = color;
+      token.dataset.id = id;
+      token.dataset.position = -1;
+      token.addEventListener("click", () => moveToken(token));
       return token;
     }
 
     function placeTokens() {
-      ["red", "green", "yellow", "blue"].forEach(color => {
+      ["red", "blue"].forEach(color => {
         for (let i = 0; i < 4; i++) {
-          const token = createToken(color);
+          const token = createToken(color, i);
+          playerTokens[color].push(token);
           cells[homeIndices[color][i]].appendChild(token);
         }
       });
@@ -143,17 +163,45 @@
 
     placeTokens();
 
-    // Dice roll animation
-    rollBtn.addEventListener("click", () => {
-      dice.classList.remove("spin");
-      void dice.offsetWidth; // reflow for animation reset
-      dice.classList.add("spin");
+    let currentPlayer = "red";
+    let currentDice = 1;
 
-      const num = Math.floor(Math.random() * 6) + 1;
+    rollBtn.addEventListener("click", () => {
+      rollBtn.disabled = true;
+      currentDice = Math.floor(Math.random() * 6) + 1;
+      dice.textContent = "🎲";
       setTimeout(() => {
-        dice.textContent = num;
-      }, 300);
+        dice.textContent = currentDice;
+        rollBtn.disabled = false;
+      }, 500);
     });
+
+    function moveToken(token) {
+      const color = token.dataset.color;
+      if (color !== currentPlayer) {
+        alert("It's not your turn!");
+        return;
+      }
+
+      let position = parseInt(token.dataset.position);
+      const path = color === "red" ? pathRed : pathBlue;
+
+      if (position + currentDice < path.length) {
+        position += currentDice;
+        token.dataset.position = position;
+        cells[path[position]].appendChild(token);
+        nextTurn();
+      }
+    }
+
+    function nextTurn() {
+      currentPlayer = currentPlayer === "red" ? "blue" : "red";
+      turnDisplay.textContent = `Current Turn: ${capitalize(currentPlayer)}`;
+    }
+
+    function capitalize(str) {
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
   </script>
 </body>
 </html>
