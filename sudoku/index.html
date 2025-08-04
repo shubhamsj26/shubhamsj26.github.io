@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Play Sudoku Challenge online for free. Choose difficulty levels and solve puzzles!">
+  <meta name="keywords" content="Sudoku, Online Sudoku, Sudoku Game, Puzzle, Logic Game">
+  <meta name="author" content="ToolsNgames">
+  <title>Sudoku Challenge - ToolsNgames</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f1f2f7;
+      font-family: Arial, sans-serif;
+    }
+    header, footer {
+      background-color: #2f2f2f;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+    .container {
+      text-align: center;
+      margin-top: 2rem;
+    }
+    .sudoku-board {
+      display: grid;
+      grid-template-columns: repeat(9, 40px);
+      grid-template-rows: repeat(9, 40px);
+      gap: 2px;
+      justify-content: center;
+      margin: 1rem auto;
+    }
+    .cell {
+      background: white;
+      border: 1px solid #ccc;
+      text-align: center;
+      font-size: 18px;
+      line-height: 40px;
+    }
+    .cell input {
+      width: 100%;
+      height: 100%;
+      border: none;
+      text-align: center;
+      font-size: 18px;
+    }
+    .controls button {
+      margin: 0.3rem;
+    }
+    .number-pad {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 1rem;
+    }
+    .number-pad button {
+      width: 40px;
+      height: 40px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Sudoku Challenge</h1>
+</header>
+
+<div class="container">
+  <div class="mb-3">
+    <label for="difficulty" class="form-label">Difficulty:</label>
+    <select id="difficulty" class="form-select w-auto d-inline-block">
+      <option>Beginner</option>
+      <option>Medium</option>
+      <option>Tough</option>
+    </select>
+    <button class="btn btn-primary">New Game</button>
+    <button class="btn btn-success">Hint (3)</button>
+    <button class="btn btn-warning">Validate</button>
+    <button class="btn btn-danger">Solve Puzzle</button>
+  </div>
+  <div><strong>Time:</strong> <span id="timer">00:00</span></div>
+  <div class="sudoku-board" id="sudoku-board">
+    <!-- Sudoku grid will be generated here -->
+  </div>
+  <div class="number-pad">
+    <button class="btn btn-outline-primary">1</button>
+    <button class="btn btn-outline-primary">2</button>
+    <button class="btn btn-outline-primary">3</button>
+    <button class="btn btn-outline-primary">4</button>
+    <button class="btn btn-outline-primary">5</button>
+    <button class="btn btn-outline-primary">6</button>
+    <button class="btn btn-outline-primary">7</button>
+    <button class="btn btn-outline-primary">8</button>
+    <button class="btn btn-outline-primary">9</button>
+    <button class="btn btn-outline-danger">⌫</button>
+  </div>
+</div>
+
+<footer>
+  <p>&copy; 2025 ToolsNgames. All rights reserved.</p>
+</footer>
+
+<script>
+  const board = document.getElementById("sudoku-board");
+  for (let i = 0; i < 81; i++) {
+    const cell = document.createElement("div");
+    cell.classList.add("cell");
+    const input = document.createElement("input");
+    input.setAttribute("maxlength", "1");
+    input.setAttribute("type", "text");
+    input.setAttribute("pattern", "[1-9]");
+    cell.appendChild(input);
+    board.appendChild(cell);
+  }
+</script>
+
+</body>
+</html>
