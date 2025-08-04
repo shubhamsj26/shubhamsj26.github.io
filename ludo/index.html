@@ -3,36 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Ludo Game</title>
+  <title>Ludo Game (15x15)</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="game-container">
-    <h1>Ludo Game (2 Player)</h1>
+  <h1>Ludo Game (15x15 Grid)</h1>
 
-    <div class="board" id="board">
-      <!-- Row 1 -->
-      <div class="cell start red" id="start-red">🔴</div>
-      <div class="cell" id="cell1"></div>
-      <div class="cell" id="cell2"></div>
-      <div class="cell" id="cell3"></div>
-      <div class="cell finish red" id="finish-red">🏁</div>
-
-      <!-- Row 2 -->
-      <div class="cell start blue" id="start-blue">🔵</div>
-      <div class="cell" id="cell4"></div>
-      <div class="cell" id="cell5"></div>
-      <div class="cell" id="cell6"></div>
-      <div class="cell finish blue" id="finish-blue">🏁</div>
-    </div>
-
-    <div class="controls">
-      <div class="dice" id="dice">🎲</div>
-      <button id="rollDiceBtn">Roll Dice</button>
-      <p>Current Player: <span id="currentPlayer">Red</span></p>
-      <p>Dice Value: <span id="diceValue">-</span></p>
-    </div>
+  <div class="dice-container">
+    <div class="dice" id="dice">🎲</div>
+    <button id="rollBtn">Roll Dice</button>
+    <p>Dice Number: <span id="diceValue">-</span></p>
   </div>
+
+  <div class="board" id="board"></div>
 
   <script src="script.js"></script>
 </body>
