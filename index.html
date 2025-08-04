@@ -1,211 +1,235 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="description" content="ToolsNGames offers fun games and useful tools like QR Code Scanner, Fake Call, and WhatsApp Direct Chat.">
-  <title>ToolsNGames - Free Games & Tools</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="ToolsNGames offers fun games and useful tools like QR Code Scanner, Fake Call, and WhatsApp Direct Chat.">
+    <title>ToolsNGames - Free Games & Tools</title>
 
-  <!-- Fireworks library -->
-  <script src="https://cdn.jsdelivr.net/npm/fireworks-js@2.1.1/dist/fireworks.min.js"></script>
+    <!-- Fireworks library -->
+    <script src="https://cdn.jsdelivr.net/npm/fireworks-js@2.1.1/dist/fireworks.min.js"></script>
 
-  <style>
-    :root {
-      --primary: #4A90E2;
-      --secondary: #50E3C2;
-      --bg: #f4f7fa;
-      --text: #2c3e50;
-      --white: #fff;
-      --shadow: rgba(0, 0, 0, 0.1);
-    }
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --secondary: #50E3C2;
+            --bg: #f4f7fa;
+            --text: #2c3e50;
+            --white: #fff;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
 
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-    }
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+        }
 
-    header, footer {
-      background-color: var(--primary);
-      color: var(--white);
-      padding: 15px 20px;
-      text-align: center;
-    }
+        header, footer {
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 15px 20px;
+            text-align: center;
+        }
 
-    header h1 {
-      margin: 0;
-      font-size: 2rem;
-    }
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
 
-    nav a {
-      color: var(--white);
-      margin: 0 12px;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 1rem;
-      transition: color 0.3s ease;
-    }
+        nav a {
+            color: var(--white);
+            margin: 0 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: color 0.3s ease;
+        }
 
-    nav a:hover {
-      color: var(--secondary);
-    }
+        nav a:hover {
+            color: var(--secondary);
+        }
 
-    main {
-      padding: 40px 20px;
-      text-align: center;
-    }
+        main {
+            padding: 40px 20px;
+            text-align: center;
+        }
 
-    h2 {
-      margin-bottom: 30px;
-      font-size: 1.8rem;
-      color: var(--primary);
-    }
+        h2 {
+            margin-bottom: 30px;
+            font-size: 1.8rem;
+            color: var(--primary);
+        }
 
-    .game-container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 24px;
-    }
+        .game-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 24px;
+        }
 
-    .game-card {
-      background: var(--white);
-      border-radius: 12px;
-      box-shadow: 0 4px 10px var(--shadow);
-      width: 280px;
-      padding: 25px 20px;
-      transition: transform 0.25s ease, box-shadow 0.25s ease;
-    }
+        .game-card {
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 4px 10px var(--shadow);
+            width: 280px;
+            padding: 25px 20px;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
 
-    .game-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-    }
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
 
-    .game-card h3 {
-      margin: 0 0 12px;
-      font-size: 1.3rem;
-      color: var(--primary);
-    }
+        .game-card h3 {
+            margin: 0 0 12px;
+            font-size: 1.3rem;
+            color: var(--primary);
+        }
 
-    .game-card p {
-      font-size: 0.95rem;
-      color: #555;
-      margin-bottom: 15px;
-    }
+        .game-card p {
+            font-size: 0.95rem;
+            color: #555;
+            margin-bottom: 15px;
+        }
 
-    .game-card a {
-      display: inline-block;
-      margin-top: 10px;
-      background: var(--primary);
-      color: var(--white);
-      padding: 10px 18px;
-      border-radius: 6px;
-      text-decoration: none;
-      font-weight: bold;
-      transition: background 0.3s ease;
-    }
+        .game-card a {
+            display: inline-block;
+            margin-top: 10px;
+            background: var(--primary);
+            color: var(--white);
+            padding: 10px 18px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
 
-    .game-card a:hover {
-      background: var(--secondary);
-    }
+        .game-card a:hover {
+            background: var(--secondary);
+        }
 
-    footer p {
-      margin: 0;
-      font-size: 0.95rem;
-    }
-  </style>
+        footer p {
+            margin: 0;
+            font-size: 0.95rem;
+        }
+    </style>
 </head>
 <body>
 
-  <header>
-    <h1>ToolsNGames</h1>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="sudoku/" target="_blank">Sudoku</a>
-      <a href="TIC-TOC/" target="_blank">Tic Tac Toe</a>
-      <a href="pingpong/" target="_blank">Ping Pong</a>
-    </nav>
-  </header>
+    <header>
+        <h1>ToolsNGames</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="sudoku/" target="_blank">Sudoku</a>
+            <a href="TIC-TOC/" target="_blank">Tic Tac Toe</a>
+            <a href="pingpong/" target="_blank">Ping Pong</a>
+        </nav>
+    </header>
 
-  <main>
-    <h2>🎮 Explore Our Games</h2>
-    <div class="game-container">
-      <div class="game-card">
-        <h3>🧩 Sudoku</h3>
-        <p>Play the classic Sudoku puzzle game with logic and numbers.</p>
-        <a href="sudoku/" target="_blank">Play Now</a>
-      </div>
-      <div class="game-card">
-        <h3>❌⭕ Tic Tac Toe</h3>
-        <p>Challenge a friend or the computer in this timeless game.</p>
-        <a href="TIC-TOC/" target="_blank">Play Now</a>
-      </div>
-      <div class="game-card">
-        <h3>🏓 Ping Pong</h3>
-        <p>Test your reflexes with this classic paddle game.</p>
-        <a href="Ping-Pong/" target="_blank">Play Now</a>
-      </div>
-      <div class="game-card">
-        <h3>🐍 Snake</h3>
-        <p>Play Snake game enjoy yours 90 t's Memory.</p>
-        <a href="Snake/" target="_blank">Play Now</a>
-      </div>
-      <div class="game-card">
-        <h3>🧠 Memory Match</h3>
-        <p>Flip cards and find matching pairs. A fun way to test and improve your memory skills. Various themes available.</p>
-        <a href="memory-match/" target="_blank">Play Now</a>
-      </div>
-      <div class="game-card">
-  <h3>🧩 Sliding Puzzle</h3>
-  <p>Sliding the card to resolve the Puzzle</p>
-  <a href="sliding-puzzle-game/" target="_blank">Play Now</a>
-</div>
+    <main>
+        <h2>🎮 Explore Our Games</h2>
+        <div class="game-container">
+            <div class="game-card">
+                <h3>🧩 Sudoku</h3>
+                <p>Play the classic Sudoku puzzle game with logic and numbers.</p>
+                <a href="sudoku/" target="_blank">Play Now</a>
+            </div>
+            <div class="game-card">
+                <h3>❌⭕ Tic Tac Toe</h3>
+                <p>Challenge a friend or the computer in this timeless game.</p>
+                <a href="TIC-TOC/" target="_blank">Play Now</a>
+            </div>
+            <div class="game-card">
+                <h3>🏓 Ping Pong</h3>
+                <p>Test your reflexes with this classic paddle game.</p>
+                <a href="Ping-Pong/" target="_blank">Play Now</a>
+            </div>
+            <div class="game-card">
+                <h3>🐍 Snake</h3>
+                <p>Play Snake game enjoy yours 90 t's Memory.</p>
+                <a href="Snake/" target="_blank">Play Now</a>
+            </div>
+            <div class="game-card">
+                <h3>🧠 Memory Match</h3>
+                <p>Flip cards and find matching pairs. A fun way to test and improve your memory skills. Various themes available.</p>
+                <a href="memory-match/" target="_blank">Play Now</a>
+            </div>
+            <div class="game-card">
+                <h3>🧩 Sliding Puzzle</h3>
+                <p>Sliding the card to resolve the Puzzle</p>
+                <a href="sliding-puzzle-game/" target="_blank">Play Now</a>
+            </div>
+            <div class="game-card">
+                <h3>♟️ Checkers</h3>
+                <p>Play this game and checkmate other user.</p>
+                <a href="Checkers/" target="_blank">Play Now</a>
+            </div>
+            <div class="game-card">
+                <h3>🃏 Solitaire</h3>
+                <p>The classic Klondike Solitaire card game. Arrange cards in descending order and alternating colors.</p>
+                <a href="solitaire/" target="_blank">Play Now</a>
+            </div>
+        </div>
 
-<div class="game-card">
-  <h3>♟️ Checkers</h3>
-  <p>Play this game and checkmate other user.</p>
-  <a href="Checkers/" target="_blank">Play Now</a>
-</div>
-<div class="game-card">
-  <h3>🃏 Solitaire</h3>
-  <p>The classic Klondike Solitaire card game. Arrange cards in descending order and alternating colors.</p>
-  <a href="solitaire/" target="_blank">Play Now</a>
-</div>
+        <!-- NEW: Web Tools Section -->
+        <h2 style="margin-top: 60px;">🔧 Our Web Tools</h2>
+        <div class="game-container">
+            <div class="game-card">
+                <h3>🔑 Base64 Encoder / Decoder</h3>
+                <p>Encode or decode text to and from Base64 format. Securely convert data for transfer over the web.</p>
+                <a href="base64/" target="_blank">Open Tool</a>
+            </div>
+            <div class="game-card">
+                <h3>📝 Word & Character Counter</h3>
+                <p>Count the number of words, characters, and paragraphs in your text. Perfect for writers and students.</p>
+                <a href="character-word-counter/" target="_blank">Open Tool</a>
+            </div>
+            <div class="game-card">
+                <h3>📷 QR Code Generator</h3>
+                <p>Create custom QR codes from any text or URL. Download your code for use in presentations or print.</p>
+                <a href="social-qr-code-generator/" target="_blank">Open Tool</a>
+            </div>
+            <div class="game-card">
+                <h3>🔗 URL Encoder / Decoder</h3>
+                <p>Encode or decode URLs to safely handle special characters. Essential for building web applications and links.</p>
+                <a href="URL-EN/" target="_blank">Open Tool</a>
+            </div>
+        </div>
+        <!-- END NEW SECTION -->
 
-    </div>
+        <h2 style="margin-top: 60px;">📱 Our Android Apps</h2>
+        <div class="game-container">
+            <div class="game-card">
+                <h3>📷 QR Code Scanner</h3>
+                <p>Fast and reliable QR code scanning tool.</p>
+                <a href="https://play.google.com/store/apps/details?id=com.toolsngames.qrcode" target="_blank">Open in Play Store</a>
+            </div>
+            <div class="game-card">
+                <h3>📞 Fake Call</h3>
+                <p>Simulate fake calls to escape awkward situations.</p>
+                <a href="https://play.google.com/store/apps/details?id=com.toolsngames.fakecall" target="_blank">Open in Play Store</a>
+            </div>
+            <div class="game-card">
+                <h3>💬 WhatsApp Direct Chat</h3>
+                <p>Send WhatsApp messages without saving contacts.</p>
+                <a href="https://play.google.com/store/apps/details?id=com.toolsngames.directchat" target="_blank">Open in Play Store</a>
+            </div>
+        </div>
+    </main>
 
-    <h2 style="margin-top: 60px;">📱 Our Android Apps</h2>
-    <div class="game-container">
-      <div class="game-card">
-        <h3>📷 QR Code Scanner</h3>
-        <p>Fast and reliable QR code scanning tool.</p>
-        <a href="https://play.google.com/store/apps/details?id=com.toolsngames.qrcode" target="_blank">Open in Play Store</a>
-      </div>
-      <div class="game-card">
-        <h3>📞 Fake Call</h3>
-        <p>Simulate fake calls to escape awkward situations.</p>
-        <a href="https://play.google.com/store/apps/details?id=com.toolsngames.fakecall" target="_blank">Open in Play Store</a>
-      </div>
-      <div class="game-card">
-        <h3>💬 WhatsApp Direct Chat</h3>
-        <p>Send WhatsApp messages without saving contacts.</p>
-        <a href="https://play.google.com/store/apps/details?id=com.toolsngames.directchat" target="_blank">Open in Play Store</a>
-      </div>
-    </div>
-  </main>
+    <footer>
+        <p>&copy; 2025 ToolsNGames. All rights reserved.</p>
+    </footer>
 
-  <footer>
-    <p>&copy; 2025 ToolsNGames. All rights reserved.</p>
-  </footer>
+    <!-- Fireworks container -->
+    <div id="fireworks-container" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999;"></div>
 
-  <!-- Fireworks container -->
-  <div id="fireworks-container" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999;"></div>
+    <!-- Optional firework sound -->
+    <audio id="fireworkSound" src="https://freesound.org/data/previews/466/466617_960389-lq.mp3" preload="auto"></audio>
 
-  <!-- Optional firework sound -->
-  <audio id="fireworkSound" src="https://freesound.org/data/previews/466/466617_960389-lq.mp3" preload="auto"></audio>
-
-  <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
