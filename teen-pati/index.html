@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teen Patti</title>
+    <!-- Tailwind CSS is loaded from a CDN for easy styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome is used for card suit icons. -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Define a custom font for a clean look */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom CSS for the card flip effect */
+        .card-inner {
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card-front {
+            transform: rotateY(180deg);
+            padding: 0.5rem;
+        }
+        /* Style for the card suits */
+        .card-suit-heart, .card-suit-diamond {
+            color: #ef4444; /* Red color */
+        }
+        .card-suit-club, .card-suit-spade {
+            color: #1f2937; /* Black color */
+        }
+        /* Style for the timer animation */
+        .timer-progress {
+            transition: width linear;
+        }
+        /* Separator line style */
+        .player-separator {
+            width: 2px;
+            height: 100%;
+            background-color: #4b5563; /* gray-600 */
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4">
+
+    <!-- Main Game Container -->
+    <div id="game-container" class="bg-gray-800 p-8 rounded-3xl shadow-2xl max-w-6xl w-full flex flex-col items-center space-y-6">
+        <h1 class="text-4xl md:text-5xl font-extrabold text-white text-center tracking-wide">
+            Teen Patti
+        </h1>
+
+        <!-- Game Info & Pot Display -->
+        <div class="flex justify-between items-center w-full mb-4">
+            <div id="message-box" class="text-xl md:text-2xl font-semibold text-center text-indigo-400">
+                Click 'Deal' to start!
+            </div>
+            <div class="bg-yellow-500 text-gray-900 rounded-full px-6 py-2 text-xl font-bold shadow-md">
+                Pot: ₹<span id="pot-amount">0</span>
+            </div>
+        </div>
+
+        <!-- Timer Display -->
+        <div id="timer-container" class="w-full h-4 bg-gray-700 rounded-full overflow-hidden mb-4 hidden">
+            <div id="timer-progress" class="h-full bg-green-500 timer-progress" style="width: 100%;"></div>
+        </div>
+        
+        <!-- Player 1 Controls -->
+        <div id="player-1-controls" class="flex justify-center space-x-4 w-full mb-8">
+            <button id="deal-btn" class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105">
+                Deal
+            </button>
+            <button id="bet-btn" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105" disabled>
+                Bet (₹10)
+            </button>
+            <button id="pack-btn" class="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105" disabled>
+                Pack
+            </button>
+            <button id="show-btn" class="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105" disabled>
+                Show
+            </button>
+        </div>
+
+        <!-- Players Container -->
+        <div class="flex flex-col sm:flex-row justify-center items-center w-full space-y-8 sm:space-y-0 sm:space-x-8">
+            <!-- Player 1 Area -->
+            <div id="player-1-area" class="w-full sm:w-1/2 flex flex-col items-center">
+                <h2 class="text-2xl font-bold mb-4 text-center">Player 1 (<span id="player-1-cash">1000</span>)</h2>
+                <div id="player-1-cards" class="flex justify-center space-x-2 h-36 md:h-48">
+                    <!-- Cards will be added here by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Separator Line (Hidden on mobile) -->
+            <div class="player-separator hidden sm:block"></div>
+
+            <!-- Player 2 Area (Computer) -->
+            <div id="player-2-area" class="w-full sm:w-1/2 flex flex-col items-center">
+                <h2 class="text-2xl font-bold mb-4 text-center">Computer (<span id="player-2-cash">1000</span>)</h2>
+                <div id="player-2-cards" class="flex justify-center space-x-2 h-36 md:h-48">
+                    <!-- Cards will be added here by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state variables
+        let players = [];
+        let deck = [];
+        let pot = 0;
+        let cardValues = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+        let cardSuits = ['hearts', 'diamonds', 'clubs', 'spades'];
+        const betAmount = 10;
+        let turn = 0; // 0 for player 1, 1 for player 2 (computer)
+        let gameActive = false;
+        let timer = null; // Holds the timer interval
+        const maxTime = 15; // Time in seconds for each turn
+        let timeRemaining = maxTime;
+        let betCount = 0;
+
+        // HTML element references
+        const messageBox = document.getElementById('message-box');
+        const potAmountSpan = document.getElementById('pot-amount');
+        const player1CardsContainer = document.getElementById('player-1-cards');
+        const player2CardsContainer = document.getElementById('player-2-cards');
+        const player1CashSpan = document.getElementById('player-1-cash');
+        const player2CashSpan = document.getElementById('player-2-cash');
+        const dealBtn = document.getElementById('deal-btn');
+        const betBtn = document.getElementById('bet-btn');
+        const packBtn = document.getElementById('pack-btn');
+        const showBtn = document.getElementById('show-btn');
+        const timerContainer = document.getElementById('timer-container');
+        const timerProgress = document.getElementById('timer-progress');
+        const player1Controls = document.getElementById('player-1-controls');
+
+        // Card object constructor
+        class Card {
+            constructor(value, suit) {
+                this.value = value;
+                this.suit = suit;
+                // Assign a numerical rank for hand comparison
+                this.rank = cardValues.indexOf(value);
+            }
+        }
+
+        // Player object constructor
+        class Player {
+            constructor(name, cash) {
+                this.name = name;
+                this.cash = cash;
+                this.cards = [];
+                this.isPacked = false;
+            }
+        }
+
+        /**
+         * Initializes the game by creating players and a new deck.
+         */
+        function initializeGame() {
+            players = [new Player('Player 1', 1000), new Player('Computer', 1000)];
+            updatePlayerUI();
+            resetGame();
+        }
+
+        /**
+         * Resets the game state for a new round.
+         */
+        function resetGame() {
+            if (timer) clearInterval(timer);
+            deck = createDeck();
+            shuffleDeck(deck);
+            pot = 0;
+            turn = 0;
+            betCount = 0;
+            gameActive = false;
+            players.forEach(p => {
+                p.cards = [];
+                p.isPacked = false;
+            });
+            potAmountSpan.textContent = pot;
+            player1CardsContainer.innerHTML = '';
+            player2CardsContainer.innerHTML = '';
+            updateMessage("Click 'Deal' to start!");
+            dealBtn.disabled = false;
+            setPlayer1Controls(false);
+            timerContainer.classList.add('hidden');
+        }
+
+        /**
+         * Enables/disables Player 1's betting controls.
+         * @param {boolean} enabled - True to enable, false to disable.
+         */
+        function setPlayer1Controls(enabled) {
+            betBtn.disabled = !enabled;
+            packBtn.disabled = !enabled;
+            showBtn.disabled = !enabled;
+        }
+
+        /**
+         * Creates a standard 52-card deck.
+         * @returns {Array<Card>} A new deck of cards.
+         */
+        function createDeck() {
+            let newDeck = [];
+            for (let suit of cardSuits) {
+                for (let value of cardValues) {
+                    newDeck.push(new Card(value, suit));
+                }
+            }
+            return newDeck;
+        }
+
+        /**
+         * Shuffles the deck using the Fisher-Yates algorithm.
+         * @param {Array<Card>} deck - The deck to shuffle.
+         */
+        function shuffleDeck(deck) {
+            for (let i = deck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [deck[i], deck[j]] = [deck[j], deck[i]];
+            }
+        }
+
+        /**
+         * Deals 3 cards to each player and updates the UI.
+         */
+        function dealCards() {
+            resetGame();
+            gameActive = true;
+            dealBtn.disabled = true;
+            
+            updateMessage("Dealing cards...");
+
+            // Deal cards to players
+            for (let i = 0; i < 3; i++) {
+                players[0].cards.push(deck.pop());
+                players[1].cards.push(deck.pop());
+            }
+
+            // Create and display card elements (face down)
+            renderCards(players[0].cards, player1CardsContainer, true);
+            renderCards(players[1].cards, player2CardsContainer, false);
+            updateMessage("Cards have been dealt. Player 1's turn.");
+            betCount = 0; // Reset bet count for the new round
+            startTurnTimer();
+        }
+
+        /**
+         * Renders the cards for a player in the UI.
+         * @param {Array<Card>} cards - The cards to render.
+         * @param {HTMLElement} container - The container to append the cards to.
+         * @param {boolean} isPlayer1 - True if rendering for Player 1.
+         */
+        function renderCards(cards, container, isPlayer1) {
+            container.innerHTML = ''; // Clear previous cards
+            const cardBackUrl = 'https://placehold.co/90x135/4338ca/ffffff?text=Teen+Patti'; // A placeholder for card back
+
+            cards.forEach(card => {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'card bg-white rounded-xl shadow-lg transform transition-transform duration-300 hover:scale-105 cursor-pointer relative';
+                cardElement.style.width = '90px';
+                cardElement.style.height = '135px';
+                cardElement.dataset.value = card.value;
+                cardElement.dataset.suit = card.suit;
+
+                const cardInner = document.createElement('div');
+                cardInner.className = 'card-inner';
+
+                const cardBack = document.createElement('div');
+                cardBack.className = 'card-back rounded-xl bg-indigo-700 border-2 border-indigo-900';
+                cardBack.innerHTML = `<img src="${cardBackUrl}" alt="Card Back" class="w-full h-full object-cover rounded-xl" />`;
+
+                const cardFront = document.createElement('div');
+                cardFront.className = 'card-front rounded-xl p-2 flex flex-col justify-between text-xl font-bold';
+                const cardValueTop = document.createElement('span');
+                cardValueTop.textContent = card.value;
+                const cardSuitIcon = document.createElement('i');
+                cardSuitIcon.className = `fas fa-1x`;
+                const cardValueBottom = document.createElement('span');
+                cardValueBottom.textContent = card.value;
+                cardValueBottom.classList.add('self-end');
+
+                if (card.suit === 'hearts') {
+                    cardSuitIcon.classList.add('fa-heart', 'card-suit-heart');
+                    cardValueTop.classList.add('card-suit-heart');
+                    cardValueBottom.classList.add('card-suit-heart');
+                } else if (card.suit === 'diamonds') {
+                    cardSuitIcon.classList.add('fa-gem', 'card-suit-diamond');
+                    cardValueTop.classList.add('card-suit-diamond');
+                    cardValueBottom.classList.add('card-suit-diamond');
+                } else if (card.suit === 'clubs') {
+                    cardSuitIcon.classList.add('fa-chess-king', 'card-suit-club', 'fa-rotate-90');
+                    cardValueTop.classList.add('card-suit-club');
+                    cardValueBottom.classList.add('card-suit-club');
+                } else {
+                    cardSuitIcon.classList.add('fa-chess-pawn', 'fa-1x', 'card-suit-spade');
+                    cardValueTop.classList.add('card-suit-spade');
+                    cardValueBottom.classList.add('card-suit-spade');
+                }
+
+                cardFront.append(cardValueTop, cardSuitIcon, cardValueBottom);
+
+                cardInner.append(cardBack, cardFront);
+                cardElement.append(cardInner);
+
+                if (isPlayer1) {
+                    cardElement.addEventListener('click', () => {
+                        cardElement.classList.toggle('flipped');
+                    });
+                }
+                
+                container.append(cardElement);
+            });
+        }
+        
+        /**
+         * Flips all cards to reveal them.
+         */
+        function flipAllCards() {
+            const allCards = document.querySelectorAll('.card');
+            allCards.forEach(card => card.classList.add('flipped'));
+        }
+
+        /**
+         * Starts the countdown timer for a player's turn.
+         */
+        function startTurnTimer() {
+            if (timer) clearInterval(timer);
+            timeRemaining = maxTime;
+            timerContainer.classList.remove('hidden');
+            timerProgress.style.width = '100%';
+            
+            // Set controls based on whose turn it is
+            if (turn === 0) {
+                setPlayer1Controls(true);
+            } else {
+                setPlayer1Controls(false);
+            }
+
+            timer = setInterval(() => {
+                timeRemaining--;
+                timerProgress.style.width = `${(timeRemaining / maxTime) * 100}%`;
+                if (timeRemaining <= 5) {
+                    timerProgress.classList.add('bg-red-500');
+                    timerProgress.classList.remove('bg-green-500');
+                } else {
+                    timerProgress.classList.remove('bg-red-500');
+                    timerProgress.classList.add('bg-green-500');
+                }
+                
+                if (timeRemaining <= 0) {
+                    clearInterval(timer);
+                    updateMessage(`${players[turn].name}'s time is up!`);
+                    
+                    if (turn === 0) {
+                        pack(); // Player 1 packs if they run out of time
+                    } else {
+                        // The computer will take an action regardless of the timer
+                        // If time runs out, it's considered an implicit action.
+                        showWinner();
+                    }
+                }
+            }, 1000);
+
+            // Computer's turn logic
+            if (turn === 1) {
+                setTimeout(aiTurn, 2000); // Wait 2 seconds before the computer makes a move
+            }
+        }
+
+        /**
+         * Player places a bet.
+         */
+        function placeBet() {
+            if (!gameActive || players[turn].isPacked || turn !== 0) return;
+
+            const currentPlayer = players[turn];
+            if (currentPlayer.cash < betAmount) {
+                updateMessage(`${currentPlayer.name} doesn't have enough cash to bet!`);
+                return;
+            }
+
+            currentPlayer.cash -= betAmount;
+            pot += betAmount;
+            betCount++;
+            updatePlayerUI();
+            updatePotUI();
+
+            updateMessage(`${currentPlayer.name} bets ₹${betAmount}.`);
+            
+            // Switch turn
+            turn = 1 - turn;
+            updateMessage(`It's ${players[turn].name}'s turn.`);
+            startTurnTimer();
+        }
+
+        /**
+         * Player chooses to pack/fold.
+         */
+        function pack() {
+            if (!gameActive || players[turn].isPacked) return;
+            
+            const packedPlayer = players[turn];
+            packedPlayer.isPacked = true;
+            updateMessage(`${packedPlayer.name} has packed. The other player wins!`);
+            
+            // The other player wins immediately
+            const winnerIndex = 1 - turn;
+            players[winnerIndex].cash += pot;
+            
+            // End the round
+            endGame(winnerIndex);
+        }
+
+        /**
+         * Logic for the computer player's turn.
+         */
+        function aiTurn() {
+            if (!gameActive || players[1].isPacked) return;
+            
+            const aiPlayer = players[1];
+            const aiHand = aiPlayer.cards;
+            const aiHandRank = evaluateHand(aiHand);
+
+            // Simple AI logic
+            // 1. If hand is weak (high card) and bet count is high, or pot is very big, pack.
+            // 2. If hand is strong (pair or better), or bet count is low, bet.
+            // 3. If bet count is high, randomly decide to show.
+
+            if (aiHandRank.rank <= 1 && betCount > 2 && Math.random() < 0.7) {
+                // Weak hand, high stakes, high chance to pack
+                pack();
+            } else if (betCount > 3 && Math.random() < 0.5) {
+                // After 3 bets, there's a 50% chance to show
+                showWinner();
+            } else if (aiPlayer.cash < betAmount) {
+                // Not enough money, must pack
+                updateMessage("Computer doesn't have enough cash, it packs.");
+                pack();
+            } else {
+                // Otherwise, bet
+                aiPlayer.cash -= betAmount;
+                pot += betAmount;
+                betCount++;
+                updatePlayerUI();
+                updatePotUI();
+                updateMessage(`Computer bets ₹${betAmount}.`);
+                
+                // Switch back to player 1
+                turn = 1 - turn;
+                updateMessage(`It's Player 1's turn.`);
+                startTurnTimer();
+            }
+        }
+
+        /**
+         * Ends the game and declares the winner.
+         * @param {number | null} winnerIndex - Index of the winning player, or null for a draw.
+         */
+        function endGame(winnerIndex = null) {
+            if (timer) clearInterval(timer);
+            gameActive = false;
+            
+            flipAllCards();
+            dealBtn.disabled = false;
+            setPlayer1Controls(false);
+            timerContainer.classList.add('hidden');
+
+            if (winnerIndex !== null) {
+                updateMessage(`${players[winnerIndex].name} wins! They take the pot of ₹${pot}.`);
+            }
+            
+            pot = 0;
+            updatePlayerUI();
+            updatePotUI();
+        }
+
+        /**
+         * Determines the winner by comparing hands.
+         */
+        function showWinner() {
+            if (!gameActive) return;
+            
+            const player1Hand = players[0].cards;
+            const player2Hand = players[1].cards;
+
+            const player1Rank = evaluateHand(player1Hand);
+            const player2Rank = evaluateHand(player2Hand);
+
+            // Compare hands to determine winner
+            let winnerIndex = -1;
+            if (player1Rank.rank > player2Rank.rank) {
+                winnerIndex = 0;
+            } else if (player2Rank.rank > player1Rank.rank) {
+                winnerIndex = 1;
+            } else {
+                // If hands are the same rank, compare high cards
+                winnerIndex = compareHighCards(player1Hand, player2Hand);
+            }
+
+            if (winnerIndex === 0) {
+                updateMessage(`Player 1 wins with a ${player1Rank.name}!`);
+                players[0].cash += pot;
+            } else if (winnerIndex === 1) {
+                updateMessage(`Computer wins with a ${player2Rank.name}!`);
+                players[1].cash += pot;
+            } else {
+                // It's a draw, split the pot
+                const halfPot = Math.floor(pot / 2);
+                players[0].cash += halfPot;
+                players[1].cash += pot - halfPot; // Handle odd amounts
+                updateMessage(`It's a draw! The pot is split.`);
+            }
+
+            endGame(winnerIndex);
+        }
+
+        /**
+         * Evaluates a player's hand and returns its rank and name.
+         * @param {Array<Card>} hand - The 3-card hand.
+         * @returns {{rank: number, name: string}} The hand rank and name.
+         */
+        function evaluateHand(hand) {
+            const sortedHand = [...hand].sort((a, b) => a.rank - b.rank);
+            const values = sortedHand.map(card => card.rank);
+            const suits = sortedHand.map(card => card.suit);
+
+            // Check for Path / Trio (same rank for all 3 cards)
+            if (values[0] === values[1] && values[1] === values[2]) {
+                return { rank: 6, name: 'Trio (Set)' };
+            }
+
+            // Check for Pure Sequence (straight flush)
+            const isPureSequence = (
+                (values[0] + 1 === values[1] && values[1] + 1 === values[2]) ||
+                (values[0] === 0 && values[1] === 1 && values[2] === 12) // A, 2, 3 sequence
+            ) && (suits[0] === suits[1] && suits[1] === suits[2]);
+
+            if (isPureSequence) {
+                return { rank: 5, name: 'Pure Sequence' };
+            }
+
+            // Check for Sequence (straight)
+            const isSequence = (
+                (values[0] + 1 === values[1] && values[1] + 1 === values[2]) ||
+                (values[0] === 0 && values[1] === 1 && values[2] === 12) // A, 2, 3 sequence
+            );
+            if (isSequence) {
+                return { rank: 4, name: 'Sequence' };
+            }
+
+            // Check for Color (flush)
+            const isColor = suits[0] === suits[1] && suits[1] === suits[2];
+            if (isColor) {
+                return { rank: 3, name: 'Color' };
+            }
+
+            // Check for Pair
+            if (values[0] === values[1] || values[1] === values[2] || values[0] === values[2]) {
+                return { rank: 2, name: 'Pair' };
+            }
+            
+            // High Card
+            return { rank: 1, name: 'High Card' };
+        }
+
+        /**
+         * Compares two hands with the same rank (e.g., two Pairs) to determine the winner.
+         * This is a simplified comparison, primarily based on the highest card.
+         * @param {Array<Card>} hand1 - Player 1's hand.
+         * @param {Array<Card>} hand2 - Player 2's hand.
+         * @returns {number} 0 if player 1 wins, 1 if player 2 wins, -1 for a draw.
+         */
+        function compareHighCards(hand1, hand2) {
+            const sortedHand1 = [...hand1].sort((a, b) => b.rank - a.rank);
+            const sortedHand2 = [...hand2].sort((a, b) => b.rank - a.rank);
+
+            for (let i = 0; i < 3; i++) {
+                if (sortedHand1[i].rank > sortedHand2[i].rank) {
+                    return 0; // Player 1 wins
+                }
+                if (sortedHand2[i].rank > sortedHand1[i].rank) {
+                    return 1; // Player 2 wins
+                }
+            }
+
+            return -1; // It's a draw
+        }
+
+        /**
+         * Updates the message box with the latest game event.
+         * @param {string} text - The message to display.
+         */
+        function updateMessage(text) {
+            messageBox.textContent = text;
+        }
+
+        /**
+         * Updates the pot amount in the UI.
+         */
+        function updatePotUI() {
+            potAmountSpan.textContent = pot;
+        }
+
+        /**
+         * Updates the players' cash amounts in the UI.
+         */
+        function updatePlayerUI() {
+            player1CashSpan.textContent = players[0].cash;
+            player2CashSpan.textContent = players[1].cash;
+        }
+
+        // Event listeners for the buttons
+        dealBtn.addEventListener('click', dealCards);
+        betBtn.addEventListener('click', placeBet);
+        packBtn.addEventListener('click', pack);
+        showBtn.addEventListener('click', showWinner);
+
+        // Initial setup
+        initializeGame();
+    </script>
+</body>
+</html>
