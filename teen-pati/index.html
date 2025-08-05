@@ -60,13 +60,13 @@
 <body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4">
 
     <!-- Main Game Container -->
-    <div id="game-container" class="bg-gray-800 p-8 rounded-3xl shadow-2xl max-w-6xl w-full flex flex-col items-center space-y-6">
+    <div id="game-container" class="bg-gray-800 p-6 md:p-8 rounded-3xl shadow-2xl max-w-6xl w-full flex flex-col items-center space-y-6">
         <h1 class="text-4xl md:text-5xl font-extrabold text-white text-center tracking-wide">
             Teen Patti
         </h1>
 
         <!-- Game Info & Pot Display -->
-        <div class="flex justify-between items-center w-full mb-4">
+        <div class="flex flex-col sm:flex-row justify-center items-center w-full mb-4 space-y-4 sm:space-y-0 sm:space-x-8">
             <div id="message-box" class="text-xl md:text-2xl font-semibold text-center text-indigo-400">
                 Click 'Deal' to start!
             </div>
@@ -81,17 +81,18 @@
         </div>
         
         <!-- Player 1 Controls -->
-        <div id="player-1-controls" class="flex justify-center space-x-4 w-full mb-8">
-            <button id="deal-btn" class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105">
+        <!-- Modified to use flex-wrap for responsiveness on mobile -->
+        <div id="player-1-controls" class="flex flex-wrap justify-center gap-4 w-full mb-8">
+            <button id="deal-btn" class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transition duration-300 transform hover:scale-105">
                 Deal
             </button>
-            <button id="bet-btn" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105" disabled>
+            <button id="bet-btn" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transition duration-300 transform hover:scale-105" disabled>
                 Bet (₹10)
             </button>
-            <button id="pack-btn" class="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105" disabled>
+            <button id="pack-btn" class="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transition duration-300 transform hover:scale-105" disabled>
                 Pack
             </button>
-            <button id="show-btn" class="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105" disabled>
+            <button id="show-btn" class="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transition duration-300 transform hover:scale-105" disabled>
                 Show
             </button>
         </div>
