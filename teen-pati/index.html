@@ -127,6 +127,7 @@
         let cardValues = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
         let cardSuits = ['hearts', 'diamonds', 'clubs', 'spades'];
         const betAmount = 10;
+        const anteAmount = 30; // New ante amount for the start of the round
         let turn = 0; // 0 for player 1, 1 for player 2 (computer)
         let gameActive = false;
         let timer = null; // Holds the timer interval
@@ -176,6 +177,7 @@
             players = [new Player('Player 1', 1000), new Player('Computer', 1000)];
             updatePlayerUI();
             resetGame();
+            renderInitialCards(); // Display cards at the start
         }
 
         /**
@@ -194,12 +196,43 @@
                 p.isPacked = false;
             });
             potAmountSpan.textContent = pot;
-            player1CardsContainer.innerHTML = '';
-            player2CardsContainer.innerHTML = '';
             updateMessage("Click 'Deal' to start!");
             dealBtn.disabled = false;
             setPlayer1Controls(false);
             timerContainer.classList.add('hidden');
+            renderInitialCards(); // Display cards when resetting
+        }
+
+        /**
+         * Renders face-down placeholder cards for both players.
+         */
+        function renderInitialCards() {
+            player1CardsContainer.innerHTML = '';
+            player2CardsContainer.innerHTML = '';
+            const cardBackUrl = 'https://placehold.co/90x135/4338ca/ffffff?text=Teen+Patti';
+
+            const createCardBack = () => {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'card bg-white rounded-xl shadow-lg relative';
+                cardElement.style.width = '90px';
+                cardElement.style.height = '135px';
+
+                const cardInner = document.createElement('div');
+                cardInner.className = 'card-inner';
+
+                const cardBack = document.createElement('div');
+                cardBack.className = 'card-back rounded-xl bg-indigo-700 border-2 border-indigo-900';
+                cardBack.innerHTML = `<img src="${cardBackUrl}" alt="Card Back" class="w-full h-full object-cover rounded-xl" />`;
+                
+                cardInner.append(cardBack);
+                cardElement.append(cardInner);
+                return cardElement;
+            };
+
+            for (let i = 0; i < 3; i++) {
+                player1CardsContainer.append(createCardBack());
+                player2CardsContainer.append(createCardBack());
+            }
         }
 
         /**
@@ -241,11 +274,24 @@
          * Deals 3 cards to each player and updates the UI.
          */
         function dealCards() {
+            // Check if players have enough cash for the ante
+            if (players[0].cash < anteAmount || players[1].cash < anteAmount) {
+                updateMessage("Not enough cash to start a new round! Reset the game or play again later.");
+                return;
+            }
+
             resetGame();
             gameActive = true;
             dealBtn.disabled = true;
+
+            // Place the ante
+            players[0].cash -= anteAmount;
+            players[1].cash -= anteAmount;
+            pot += anteAmount * 2;
+            updatePlayerUI();
+            updatePotUI();
             
-            updateMessage("Dealing cards...");
+            updateMessage(`A new round begins! Each player antes ₹${anteAmount}. Dealing cards...`);
 
             // Deal cards to players
             for (let i = 0; i < 3; i++) {
