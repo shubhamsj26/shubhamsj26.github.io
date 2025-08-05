@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>All India FM Radio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial, sans-serif; background: #f9f9f9; margin: 0; padding: 20px; text-align: center; }
+    h1 { color: #333; }
+    .radio-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
+    .station { border: 1px solid #ddd; padding: 10px 20px; border-radius: 8px; background: white; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); cursor: pointer; }
+    .station:hover { background-color: #f1f1f1; }
+    #now-playing { margin-top: 20px; font-size: 1.2em; color: #444; }
+    audio { width: 100%; max-width: 400px; margin-top: 10px; }
+    @media (max-width: 600px) {
+      .radio-list { flex-direction: column; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎧 Play All India FM Radio</h1>
+
+  <div class="radio-list" id="radioList">
+    <!-- Stations will be added dynamically -->
+  </div>
+
+  <div id="now-playing">Select a station to play</div>
+  <audio id="audioPlayer" controls autoplay preload="none" crossorigin="anonymous"></audio>
+
+  <script>
+    const stations = [
+      { name: "Radio Mirchi", url: "https://peridot.streamguys1.com:7150/;stream.mp3", language: "Hindi" },
+      { name: "Red FM Delhi", url: "https://node-34.zeno.fm/5wb8t23gfzzuv", language: "Hindi" },
+      { name: "Big FM", url: "https://stream-158.zeno.fm/99f1q0pseuquv", language: "Hindi" },
+      { name: "Desi World Radio", url: "https://node-04.zeno.fm/3gme42q0m0quv", language: "Punjabi" },
+      { name: "Radio City Punjabi", url: "https://prclive1.listenon.in/Punjabi", language: "Punjabi" },
+      { name: "Punjabi Radio USA", url: "https://punjabiradiousa.radioca.st/stream", language: "Punjabi" },
+      { name: "Hungama Bollywood", url: "https://10373.live.streamtheworld.com/HUNGAMA_HINDI.mp3", language: "Hindi" },
+      { name: "Bollywood Gaane Purane", url: "https://stream.zeno.fm/2e8k9k1bp2zuv", language: "Hindi" },
+      { name: "Taal Radio", url: "https://stream.zeno.fm/w8k7qt3g1s8uv", language: "Punjabi" },
+      { name: "Mast FM 103", url: "https://stream.zeno.fm/98yn7eysebruv", language: "Hindi" },
+      { name: "Non Stop Bollywood", url: "https://stream.zeno.fm/dxx21sv0y7zuv", language: "Hindi" },
+      { name: "Radio Haanji", url: "https://stream.zeno.fm/wq7bw5rkg0quv", language: "Punjabi" },
+      { name: "Dhol Radio", url: "https://stream.zeno.fm/c8f36yg0whruv", language: "Punjabi" }
+    ];
+
+    const radioList = document.getElementById('radioList');
+    const audioPlayer = document.getElementById('audioPlayer');
+    const nowPlaying = document.getElementById('now-playing');
+
+    function testAndPlay(url, stationName) {
+      fetch(url, { method: 'HEAD', mode: 'no-cors' })
+        .then(() => {
+          audioPlayer.src = url;
+          audioPlayer.play();
+          nowPlaying.innerText = `Now Playing: ${stationName}`;
+        })
+        .catch(() => {
+          nowPlaying.innerText = `Failed to play: ${stationName}`;
+        });
+    }
+
+    stations.forEach(station => {
+      const btn = document.createElement('div');
+      btn.className = 'station';
+      btn.innerText = `${station.name} (${station.language})`;
+      btn.onclick = () => testAndPlay(station.url, station.name);
+      radioList.appendChild(btn);
+    });
+  </script>
+
+</body>
+</html>
