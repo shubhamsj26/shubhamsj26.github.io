@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heartiest Congratulations!</title>
+    <!-- Use Tailwind CSS for a clean and responsive layout -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Use Google Fonts for a celebratory typeface -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap" rel="stylesheet">
+    <style>
+        /*
+         * This keyframe animation defines the effect for each word.
+         * It starts with the word invisible and slightly below its final position,
+         * then fades it in and moves it up to its final position.
+         */
+        @keyframes fadeInMoveUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /*
+         * Apply the animation to each span element (representing a word).
+         * Each span will have a slight delay to create the staggered effect.
+         */
+        .animated-word {
+            opacity: 0; /* Start with words hidden */
+            animation: fadeInMoveUp 1s ease-out forwards;
+            display: inline-block; /* Essential for the transform to work on a single word */
+        }
+        
+        /* Keyframes for the balloon animation */
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* Keyframes for the balloon sway */
+        @keyframes sway {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(20px); }
+        }
+
+        /* Styling for the balloon elements */
+        .balloon {
+            position: absolute;
+            bottom: -150px;
+            font-size: 5rem;
+            animation: float 20s ease-in-out infinite, sway 6s ease-in-out infinite alternate;
+            z-index: -1;
+            transform-origin: bottom center;
+        }
+
+        /* Define a few different balloon colors */
+        .balloon-red { color: #ef4444; }
+        .balloon-blue { color: #3b82f6; }
+        .balloon-yellow { color: #facc15; }
+        .balloon-green { color: #22c55e; }
+        .balloon-purple { color: #a855f7; }
+
+    </style>
+</head>
+<body class="bg-gray-900 flex items-center justify-center min-h-screen relative overflow-hidden">
+    <!-- Main container for the text -->
+    <div class="text-center p-8 rounded-lg shadow-2xl bg-white bg-opacity-10 backdrop-blur-sm z-10">
+        <h1 id="congrats-text" class="text-4xl md:text-6xl lg:text-7xl text-white font-extrabold tracking-tight" style="font-family: 'Oswald', sans-serif;">
+            <!-- The text will be injected here by JavaScript -->
+        </h1>
+    </div>
+
+    <script>
+        // Get the H1 element where the text will be placed
+        const h1Element = document.getElementById('congrats-text');
+        
+        // The original text to be displayed
+        const originalText = "Heartiest congratulations, Satinder MoM, on your well-deserved promotion to Lecturer";
+        
+        // Split the text into an array of words
+        const words = originalText.split(' ');
+        
+        // Loop through each word and create an animated span element for it
+        words.forEach((word, index) => {
+            // Create a new span element
+            const span = document.createElement('span');
+            
+            // Set the class and add a right margin for spacing
+            span.className = 'animated-word mr-2';
+            span.textContent = word;
+            
+            // Set the animation delay for each word to create the staggered effect.
+            // The first word has a delay of 0.2s, the second 0.4s, and so on.
+            span.style.animationDelay = `${index * 0.2}s`;
+            
+            // Append the new span to the h1 element
+            h1Element.appendChild(span);
+        });
+
+        // Add balloons to the page
+        const balloonCount = 20;
+        const colors = ['balloon-red', 'balloon-blue', 'balloon-yellow', 'balloon-green', 'balloon-purple'];
+        const body = document.body;
+
+        for (let i = 0; i < balloonCount; i++) {
+            const balloon = document.createElement('div');
+            balloon.className = `balloon ${colors[Math.floor(Math.random() * colors.length)]}`;
+            balloon.textContent = '🎈';
+
+            // Randomize starting position, duration, and delay for each balloon
+            const leftPosition = Math.random() * 100;
+            const duration = 15 + Math.random() * 10;
+            const delay = Math.random() * 10;
+
+            balloon.style.left = `${leftPosition}vw`;
+            balloon.style.animationDuration = `${duration}s`;
+            balloon.style.animationDelay = `-${delay}s`; // Negative delay starts animation partway through
+
+            body.appendChild(balloon);
+        }
+    </script>
+</body>
+</html>
