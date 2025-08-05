@@ -39,8 +39,15 @@
         
         /* Keyframes for the balloon animation */
         @keyframes float {
-            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+            0% { 
+                transform: translateY(0) rotate(0deg); 
+                opacity: 1; 
+            }
+            100% { 
+                /* This is the key part that makes the balloons float from bottom to top */
+                transform: translateY(-120vh) rotate(360deg); 
+                opacity: 0; 
+            }
         }
 
         /* Keyframes for the balloon sway */
@@ -53,7 +60,6 @@
         .balloon {
             position: absolute;
             bottom: -150px;
-            font-size: 5rem;
             animation: float 20s ease-in-out infinite, sway 6s ease-in-out infinite alternate;
             z-index: -1;
             transform-origin: bottom center;
@@ -81,7 +87,7 @@
         const h1Element = document.getElementById('congrats-text');
         
         // The original text to be displayed
-        const originalText = "Heartiest congratulations, Satinder MoM, on your well-deserved promotion to Lecturer";
+        const originalText = "Heartiest congratulations, Satinder MoM, on your well-deserved promotion to Lecturer.";
         
         // Split the text into an array of words
         const words = originalText.split(' ');
@@ -104,12 +110,14 @@
         });
 
         // Add balloons to the page
-        const balloonCount = 20;
+        const balloonCount = 30; // Increased balloon count
         const colors = ['balloon-red', 'balloon-blue', 'balloon-yellow', 'balloon-green', 'balloon-purple'];
         const body = document.body;
 
         for (let i = 0; i < balloonCount; i++) {
             const balloon = document.createElement('div');
+            const randomSize = 3 + Math.random() * 4; // Random size between 3rem and 7rem
+            
             balloon.className = `balloon ${colors[Math.floor(Math.random() * colors.length)]}`;
             balloon.textContent = '🎈';
 
@@ -119,6 +127,7 @@
             const delay = Math.random() * 10;
 
             balloon.style.left = `${leftPosition}vw`;
+            balloon.style.fontSize = `${randomSize}rem`; // Set random size
             balloon.style.animationDuration = `${duration}s`;
             balloon.style.animationDelay = `-${delay}s`; // Negative delay starts animation partway through
 
