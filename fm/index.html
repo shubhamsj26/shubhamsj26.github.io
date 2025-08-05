@@ -1,74 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>All India FM Radio</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Live Indian FM Stations</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f9f9f9; margin: 0; padding: 20px; text-align: center; }
-    h1 { color: #333; }
-    .radio-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
-    .station { border: 1px solid #ddd; padding: 10px 20px; border-radius: 8px; background: white; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); cursor: pointer; }
-    .station:hover { background-color: #f1f1f1; }
-    #now-playing { margin-top: 20px; font-size: 1.2em; color: #444; }
-    audio { width: 100%; max-width: 400px; margin-top: 10px; }
-    @media (max-width: 600px) {
-      .radio-list { flex-direction: column; align-items: center; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #222;
+    }
+    .station {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fff;
+      padding: 10px 15px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .station-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .station-title {
+      font-size: 16px;
+      font-weight: bold;
+    }
+    .station-lang {
+      color: #777;
+      font-size: 12px;
+    }
+    .controls button {
+      padding: 10px;
+      background: #5e3bea;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    audio {
+      display: none;
     }
   </style>
 </head>
 <body>
-
-  <h1>🎧 Play All India FM Radio</h1>
-
-  <div class="radio-list" id="radioList">
-    <!-- Stations will be added dynamically -->
+  <div class="container">
+    <h1>Live Indian FM Stations</h1>
+    <div id="stations"></div>
   </div>
-
-  <div id="now-playing">Select a station to play</div>
-  <audio id="audioPlayer" controls autoplay preload="none" crossorigin="anonymous"></audio>
 
   <script>
     const stations = [
-      { name: "Radio Mirchi", url: "https://peridot.streamguys1.com:7150/;stream.mp3", language: "Hindi" },
-      { name: "Red FM Delhi", url: "https://node-34.zeno.fm/5wb8t23gfzzuv", language: "Hindi" },
-      { name: "Big FM", url: "https://stream-158.zeno.fm/99f1q0pseuquv", language: "Hindi" },
-      { name: "Desi World Radio", url: "https://node-04.zeno.fm/3gme42q0m0quv", language: "Punjabi" },
-      { name: "Radio City Punjabi", url: "https://prclive1.listenon.in/Punjabi", language: "Punjabi" },
-      { name: "Punjabi Radio USA", url: "https://punjabiradiousa.radioca.st/stream", language: "Punjabi" },
-      { name: "Hungama Bollywood", url: "https://10373.live.streamtheworld.com/HUNGAMA_HINDI.mp3", language: "Hindi" },
-      { name: "Bollywood Gaane Purane", url: "https://stream.zeno.fm/2e8k9k1bp2zuv", language: "Hindi" },
-      { name: "Taal Radio", url: "https://stream.zeno.fm/w8k7qt3g1s8uv", language: "Punjabi" },
-      { name: "Mast FM 103", url: "https://stream.zeno.fm/98yn7eysebruv", language: "Hindi" },
-      { name: "Non Stop Bollywood", url: "https://stream.zeno.fm/dxx21sv0y7zuv", language: "Hindi" },
-      { name: "Radio Haanji", url: "https://stream.zeno.fm/wq7bw5rkg0quv", language: "Punjabi" },
-      { name: "Dhol Radio", url: "https://stream.zeno.fm/c8f36yg0whruv", language: "Punjabi" }
+      { name: "Bollywood Now", url: "https://nl4.mystreaming.net/uber/bollywoodnow/icecast.audio", lang: "hindi" },
+      { name: "Bollywood Shreya Ghosal", url: "https://nl4.mystreaming.net/uber/bollywoodshreyaghosal/icecast.audio", lang: "hindi" },
+      { name: "Bollywood 2000s", url: "https://2.mystreaming.net/uber/bollywood2000s/icecast.audio", lang: "hindi" },
+      { name: "Rafi Hit Songs", url: "https://stream-170.zeno.fm/0zkr7x8ztm0uv", lang: "hindi" },
+      { name: "Vivid Bharti", url: "https://eu8.fastcast4u.com/proxy/clyedupq/stream", lang: "hindi" },
+      { name: "Red FM 93.5", url: "https://stream-174.zeno.fm/q97eczydqrhvv", lang: "hindi" },
+      { name: "Zeno FM 1", url: "https://stream-160.zeno.fm/87xam8pf7tzuv", lang: "hindi" },
+      { name: "Zeno FM 2", url: "https://stream-157.zeno.fm/rm4i9pdex3cuv", lang: "punjabi" },
+      { name: "Zeno FM 3", url: "https://stream-169.zeno.fm/0ghtfp8ztm0uv", lang: "punjabi" }
     ];
 
-    const radioList = document.getElementById('radioList');
-    const audioPlayer = document.getElementById('audioPlayer');
-    const nowPlaying = document.getElementById('now-playing');
+    let currentAudio = null;
 
-    function testAndPlay(url, stationName) {
-      fetch(url, { method: 'HEAD', mode: 'no-cors' })
-        .then(() => {
-          audioPlayer.src = url;
-          audioPlayer.play();
-          nowPlaying.innerText = `Now Playing: ${stationName}`;
-        })
-        .catch(() => {
-          nowPlaying.innerText = `Failed to play: ${stationName}`;
-        });
-    }
+    const container = document.getElementById("stations");
 
-    stations.forEach(station => {
-      const btn = document.createElement('div');
-      btn.className = 'station';
-      btn.innerText = `${station.name} (${station.language})`;
-      btn.onclick = () => testAndPlay(station.url, station.name);
-      radioList.appendChild(btn);
+    stations.forEach((station, index) => {
+      const div = document.createElement("div");
+      div.className = "station";
+
+      const info = document.createElement("div");
+      info.className = "station-info";
+      info.innerHTML = `<div class='station-title'>${station.name}</div><div class='station-lang'>${station.lang}</div>`;
+
+      const controls = document.createElement("div");
+      controls.className = "controls";
+      const playButton = document.createElement("button");
+      playButton.innerHTML = "▶️";
+
+      const audio = document.createElement("audio");
+      audio.src = station.url;
+      audio.controls = true;
+
+      playButton.onclick = () => {
+        if (currentAudio && currentAudio !== audio) {
+          currentAudio.pause();
+        }
+        if (audio.paused) {
+          audio.play();
+          currentAudio = audio;
+        } else {
+          audio.pause();
+          currentAudio = null;
+        }
+      };
+
+      controls.appendChild(playButton);
+      div.appendChild(info);
+      div.appendChild(controls);
+      div.appendChild(audio);
+      container.appendChild(div);
     });
   </script>
-
 </body>
 </html>
